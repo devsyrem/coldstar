@@ -8,6 +8,95 @@ This repository contains the core implementation, documentation, and tooling req
 
 ---
 
+## Quick Start
+
+### Prerequisites
+
+Coldstar requires both **Python 3.8+** and **Rust** to be installed on your system.
+
+#### Installing Python
+
+**Windows (PowerShell):**
+```powershell
+# Download and install Python from official website
+winget install Python.Python.3.11
+
+# Or download from: https://www.python.org/downloads/
+# Make sure to check "Add Python to PATH" during installation
+```
+
+**macOS:**
+```bash
+# Using Homebrew
+brew install python@3.11
+
+# Or download from: https://www.python.org/downloads/
+```
+
+**Linux:**
+```bash
+# Ubuntu/Debian
+sudo apt update
+sudo apt install python3 python3-pip
+
+# Fedora
+sudo dnf install python3 python3-pip
+
+# Arch
+sudo pacman -S python python-pip
+```
+
+Verify installation:
+```bash
+python --version
+# or
+python3 --version
+```
+
+#### Installing Rust
+
+**All Platforms (Recommended):**
+```bash
+# Install rustup (Rust installer)
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+
+# Follow the on-screen instructions
+# After installation, restart your terminal
+```
+
+**Windows (Alternative using winget):**
+```powershell
+winget install Rustlang.Rustup
+```
+
+Verify installation:
+```bash
+cargo --version
+rustc --version
+```
+
+### Installation & Running
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/devsyrem/coldstar.git
+cd coldstar
+```
+
+2. **Run the application:**
+```bash
+python main.py
+```
+
+The application will automatically:
+- Build the Rust secure signer on first run
+- Set up the necessary environment
+- Launch the interactive CLI
+
+**Note:** The first run will take a few minutes as it compiles the Rust components. Subsequent runs will be much faster.
+
+---
+
 ## Core Idea
 
 Traditional hardware wallets rely on permanent devices that store private keys for their entire lifetime. This creates persistent trust anchors, supply-chain risk, and physical attack surfaces.
@@ -550,39 +639,7 @@ scripts/    Automation and example workflows
 
 ---
 
-## Getting Started
-
-### 🚀 One-Command Installation
-
-**No Python or Rust installed? No problem!** The installer handles everything automatically.
-
-**Windows (PowerShell):**
-```powershell
-.\install.ps1
-```
-
-**macOS (Terminal):**
-```bash
-chmod +x install.sh && ./install.sh
-```
-
-**Linux (Terminal):**
-```bash
-chmod +x install.sh && ./install.sh
-```
-
-The installer will automatically:
-- ✅ Install Python 3.7+ (if missing)
-- ✅ Install Rust/Cargo (if missing)
-- ✅ Install all Python dependencies
-- ✅ Build Rust components
-- ✅ Verify the installation
-
-📖 **See [INSTALL.md](INSTALL.md) for detailed installation instructions and troubleshooting.**
-
----
-
-### Development and Testing
+## Development and Testing
 
 For development and testing:
 - [test_first_boot.py](test_first_boot.py) - First boot functionality tests
@@ -596,8 +653,6 @@ For development and testing:
 
 ## Disclaimer
 
-Coldstar is experimental software.
-
 Users are responsible for understanding the risks, verifying the code, and operating within the documented security assumptions.
 
 ---
@@ -610,5 +665,6 @@ Open-source. See the LICENSE file for details.
 
 
 #
-#   c o l d s t a r  
+#   c o l d s t a r 
+ 
  

@@ -1,0 +1,58 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Rust build artifacts
+secure_signer/target/
+secure_signer/Cargo.lock
+*.dll
+*.so
+*.dylib
+
+# Output directories
+output/
+
+# Sensitive wallet data - NEVER COMMIT
+local_wallet/
+*.json
+!package.json
+!package-lock.json
+!pyproject.toml
+!secure_signer/Cargo.toml
+pubkey.txt
+
+# Installer files
+rustup-init.exe
+*.exe
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Replit specific
+.replit
+replit.nix
+.upm/
+uv.lock
+
+# Local development files
+.local/
+test_*.py
+check_*.py
