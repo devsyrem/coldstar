@@ -665,6 +665,4 @@ Open-source. See the LICENSE file for details.
 
 
 #
-#   c o l d s t a r 
- 
- 
+#
