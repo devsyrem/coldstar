@@ -215,6 +215,127 @@ def select_device(devices: list) -> str:
             console.print("[red]Please enter a number[/red]")
 
 
+def unmount_all_partitions(device: str) -> bool:
+    """Unmount all partitions on a device"""
+    is_macos = platform.system() == 'Darwin'
+    is_windows = platform.system() == 'Windows'
+    
+    if is_windows:
+        console.print("[yellow]Windows disk unmounting not implemented[/yellow]")
+        return True
+    
+    try:
+        if is_macos:
+            # Use diskutil to unmount all partitions
+            console.print(f"Unmounting all partitions on {device}...")
+            result = subprocess.run(
+                ['diskutil', 'unmountDisk', 'force', device],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode == 0:
+                console.print("[green]✓ All partitions unmounted[/green]")
+                return True
+            else:
+                console.print(f"[yellow]Warning: {result.stderr.strip()}[/yellow]")
+                # Try to continue anyway
+                return True
+        else:
+            # Linux: Find and unmount all partitions
+            console.print(f"Unmounting partitions on {device}...")
+            
+            # Get list of mounted partitions for this device
+            result = subprocess.run(
+                ['lsblk', '-ln', '-o', 'NAME,MOUNTPOINT', device],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            unmounted = 0
+            if result.returncode == 0:
+                for line in result.stdout.strip().split('\n'):
+                    parts = line.split()
+                    if len(parts) >= 2:  # Has a mount point
+                        partition = f"/dev/{parts[0]}"
+                        mount_point = parts[1]
+                        
+                        try:
+                            umount_result = subprocess.run(
+                                ['umount', partition],
+                                capture_output=True,
+                                text=True,
+                                timeout=10
+                            )
+                            if umount_result.returncode == 0:
+                                console.print(f"[green]✓ Unmounted {partition}[/green]")
+                                unmounted += 1
+                        except Exception as e:
+                            console.print(f"[yellow]Warning: Could not unmount {partition}: {e}[/yellow]")
+            
+            if unmounted > 0:
+                console.print(f"[green]✓ Unmounted {unmounted} partition(s)[/green]")
+            
+            return True
+            
+    except subprocess.TimeoutExpired:
+        console.print("[yellow]Warning: Unmount operation timed out[/yellow]")
+        return False
+    except Exception as e:
+        console.print(f"[yellow]Warning: Error during unmount: {e}[/yellow]")
+        return False
+
+
+def wipe_disk_signatures(device: str) -> bool:
+    """Wipe disk signatures and partition tables"""
+    is_macos = platform.system() == 'Darwin'
+    is_windows = platform.system() == 'Windows'
+    
+    if is_windows or is_macos:
+        # Skip signature wiping on Windows and macOS (dd will overwrite anyway)
+        return True
+    
+    try:
+        console.print(f"Wiping partition signatures on {device}...")
+        
+        # Use wipefs to remove signatures (safer than dd)
+        result = subprocess.run(
+            ['wipefs', '--all', '--force', device],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if result.returncode == 0:
+            console.print("[green]✓ Disk signatures wiped[/green]")
+            return True
+        else:
+            # wipefs might not be available, try dd as fallback
+            console.print("[yellow]Trying alternative method...[/yellow]")
+            dd_result = subprocess.run(
+                ['dd', 'if=/dev/zero', f'of={device}', 'bs=512', 'count=1'],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            if dd_result.returncode == 0:
+                console.print("[green]✓ Partition table cleared[/green]")
+                return True
+            
+            console.print("[yellow]Warning: Could not wipe signatures[/yellow]")
+            return False
+            
+    except FileNotFoundError:
+        # wipefs not found, skip
+        return True
+    except Exception as e:
+        console.print(f"[yellow]Warning: {e}[/yellow]")
+        return False
+
+
 def confirm_flash(device: str, image: Path) -> bool:
     """Confirm the flash operation"""
     console.print(f"\n[bold][red]WARNING: DESTRUCTIVE OPERATION[/red][/bold]")
@@ -233,27 +354,52 @@ def flash_image(device: str, image: Path) -> bool:
     console.print("This may take several minutes.\n")
     
     is_macos = platform.system() == 'Darwin'
+    is_linux = platform.system() == 'Linux'
     
     try:
-        # On macOS, unmount the disk first (but don't eject)
-        if is_macos:
-            console.print(f"Unmounting {device}...")
-            subprocess.run(['diskutil', 'unmountDisk', device], timeout=30)
+        # Step 1: Unmount all partitions
+        console.print("[bold]Step 1: Preparing disk...[/bold]")
+        if not unmount_all_partitions(device):
+            console.print("[yellow]Warning: Some partitions may still be mounted[/yellow]")
+            console.print("[yellow]Attempting to continue...[/yellow]")
+        
+        # Step 2: Wipe disk signatures (Linux only)
+        if is_linux:
+            console.print("\n[bold]Step 2: Clearing partition table...[/bold]")
+            wipe_disk_signatures(device)
+        
+        console.print("\n[bold]Step 3: Writing image...[/bold]")
         
         if str(image).endswith('.img') or str(image).endswith('.iso'):
             # For macOS, use rdisk for faster writes
             target_device = device
             if is_macos and 'disk' in device:
                 target_device = device.replace('/dev/disk', '/dev/rdisk')
+                console.print(f"[cyan]Using raw disk device for faster writes: {target_device}[/cyan]")
             
             cmd = ['dd', f'if={image}', f'of={target_device}', 'bs=4m' if is_macos else 'bs=4M']
             
-            # Add status on macOS if supported
+            # Add status reporting
             if not is_macos:
                 cmd.extend(['status=progress', 'oflag=sync'])
             
             console.print(f"Writing image to {target_device}...")
-            result = subprocess.run(cmd, timeout=600)
+            console.print("[yellow]This may take 5-15 minutes depending on USB speed...[/yellow]")
+            
+            # Run dd with error output capture
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=1800)
+            
+            if result.returncode != 0:
+                console.print(f"[red]Error during write:[/red]")
+                console.print(f"[red]{result.stderr}[/red]")
+                return False
+            
+            # Show dd statistics if available
+            if result.stderr:
+                console.print("[cyan]Write statistics:[/cyan]")
+                for line in result.stderr.split('\n'):
+                    if 'bytes' in line or 'copied' in line:
+                        console.print(f"[cyan]{line}[/cyan]")
         else:
             console.print("Formatting USB as ext4...")
             subprocess.run(['mkfs.ext4', '-F', device], timeout=60)
@@ -277,25 +423,32 @@ def flash_image(device: str, image: Path) -> bool:
                 return True
             return False
         
-        # Sync to ensure all data is written
-        console.print("Syncing...")
-        subprocess.run(['sync'])
+        # Step 4: Sync to ensure all data is written
+        console.print("\n[bold]Step 4: Finalizing...[/bold]")
+        console.print("Syncing data to disk...")
+        sync_result = subprocess.run(['sync'], timeout=60)
+        console.print("[green]✓ Sync complete[/green]")
         
         # On macOS, eject the disk
         if is_macos:
-            console.print("Ejecting disk...")
-            subprocess.run(['diskutil', 'eject', device], timeout=30)
+            console.print("\nEjecting disk...")
+            eject_result = subprocess.run(
+                ['diskutil', 'eject', device],
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            if eject_result.returncode == 0:
+                console.print("[green]✓ Disk ejected safely[/green]")
+            else:
+                console.print(f"[yellow]Warning: Could not eject disk: {eject_result.stderr}[/yellow]")
         
-        if result.returncode == 0:
-            console.print("\n[bold][green]SUCCESS! USB cold wallet created![/green][/bold]")
-            console.print("\nNext steps:")
-            console.print("1. Remove the USB drive")
-            console.print("2. Boot an air-gapped computer from this USB")
-            console.print("3. The wallet will be generated on first boot")
-            return True
-        else:
-            console.print("\n[red]Flash operation failed[/red]")
-            return False
+        console.print("\n[bold][green]✓ SUCCESS! USB cold wallet created![/green][/bold]")
+        console.print("\nNext steps:")
+        console.print("1. Remove the USB drive safely")
+        console.print("2. Boot an air-gapped computer from this USB")
+        console.print("3. The wallet will be generated on first boot")
+        return True
             
     except subprocess.TimeoutExpired:
         console.print("\n[red]Operation timed out[/red]")
