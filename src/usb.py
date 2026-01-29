@@ -779,8 +779,6 @@ class USBManager:
                 pass
         
         if is_first_boot:
-            print_info("🔄 First instance boot detected on this machine...")
-            
             # Check if critical wallet files need restoration
             files_restored = self._check_and_restore_wallet_files(base_path, backup_dir)
             
@@ -789,22 +787,19 @@ class USBManager:
                 boot_marker_dir.mkdir(parents=True, exist_ok=True)
                 with open(boot_marker_file, 'w') as f:
                     f.write(current_boot_id)
-                print_success("✓ Boot instance marker updated")
             except Exception as e:
                 print_warning(f"Could not update boot marker: {e}")
             
+            # Only show messages if files were actually restored
             if files_restored > 0:
-                print_success(f"✓ First boot process completed - {files_restored} file(s) restored")
-            else:
-                print_success("✓ First boot process completed - no restoration needed")
+                print_success(f"✓ {files_restored} wallet file(s) restored from backup")
             
             return True
         else:
-            # Not first boot on this machine, but still verify wallet integrity
-            print_info("Boot instance verified - checking wallet integrity...")
+            # Not first boot on this machine, but still verify wallet integrity silently
             files_restored = self._check_and_restore_wallet_files(base_path, backup_dir)
             if files_restored > 0:
-                print_success(f"✓ Integrity check completed - {files_restored} file(s) restored")
+                print_success(f"✓ {files_restored} wallet file(s) restored from backup")
             return True
     
     def _check_and_restore_wallet_files(self, base_path: Path, backup_dir: Path) -> int:
@@ -828,7 +823,7 @@ class USBManager:
             needs_restoration = False
             
             if not file_path.exists():
-                print_warning(f"⚠ Missing: {file_path.name}")
+                # Don't spam warnings for missing files - normal for new wallets
                 needs_restoration = True
             elif file_path.stat().st_size == 0:
                 print_warning(f"⚠ Corrupted (empty): {file_path.name}")
@@ -850,10 +845,6 @@ class USBManager:
                         files_restored += 1
                     except Exception as e:
                         print_error(f"Failed to restore {file_path.name}: {e}")
-                else:
-                    # No backup available - this might be intentional (new wallet)
-                    if file_type == 'keypair':
-                        print_info(f"No backup for {file_path.name} - wallet may not be initialized yet")
             else:
                 # File exists and is valid - ensure we have a backup
                 self._create_backup_if_needed(file_path, backup_dir)
@@ -868,17 +859,16 @@ class USBManager:
         backup_file = backup_dir / file_path.name
         
         try:
-            # Create backup if it doesn't exist
+            # Create backup if it doesn't exist (silent - no need to announce)
             if not backup_file.exists():
                 import shutil
                 backup_dir.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(file_path, backup_file)
-                print_info(f"✓ Created backup: {file_path.name}")
             else:
-                # Update backup if source is newer
+                # Update backup if source is newer (silent)
                 if file_path.stat().st_mtime > backup_file.stat().st_mtime:
                     import shutil
                     shutil.copy2(file_path, backup_file)
-                    print_info(f"✓ Updated backup: {file_path.name}")
         except Exception as e:
+            # Only warn if backup actually fails
             print_warning(f"Could not backup {file_path.name}: {e}")
