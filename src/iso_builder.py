@@ -972,13 +972,6 @@ For more information, see the project documentation.
         print_step(6, 7, f"Flashing to {device_path}...")
         print_warning(f"This will ERASE ALL DATA on {device_path}")
         
-        if not confirm_dangerous_action(
-            f"All data on {device_path} will be permanently destroyed!",
-            "FLASH"
-        ):
-            print_info("Flash operation cancelled")
-            return False
-        
         try:
             mount_point = None
             
