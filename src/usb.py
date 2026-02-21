@@ -198,9 +198,11 @@ class USBManager:
                 disk_info = plistlib.loads(info_result.stdout)
                 
                 # Only include removable USB devices
-                is_removable = disk_info.get('Removable', False) or disk_info.get('Internal', True) == False
+                is_removable = (disk_info.get('Removable', False) or
+                               disk_info.get('RemovableMediaOrExternalDevice', False) or
+                               disk_info.get('Internal', True) == False)
                 protocol = disk_info.get('BusProtocol', '')
-                
+
                 if is_removable and ('USB' in protocol or 'Secure Digital' in protocol):
                     size_bytes = disk_info.get('TotalSize', 0)
                     size_gb = size_bytes / (1024**3)

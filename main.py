@@ -157,58 +157,22 @@ class SolanaColdWalletCLI:
             self.exit_app()
     
     def _wallet_menu(self):
-        """Main menu when a cold wallet is mounted and active"""
-        self._display_wallet_balance()
-        
-        print_section_header("COLD WALLET MENU")
-        
-        options = [
-            "1. Send SOL",
-            "2. View Transaction History",
-            "3. Request Airdrop (Devnet Only)",
-            "4. Refresh Balance",
-            "5. Network Status",
-            "6. Unmount Wallet",
-            "0. Exit"
-        ]
-        
-        choice = select_menu_option(options, "Select an option:")
-        
-        if choice is None:
-            return
-        
-        choice_num = choice.split(".")[0].strip()
-        
-        if choice_num == "1":
-            self._draw_header()
-            self.quick_send_transaction()
-            self._wait_for_key()
-        elif choice_num == "2":
-            self._draw_header()
-            self.view_transaction_history()
-            self._wait_for_key()
-        elif choice_num == "3":
-            self._draw_header()
-            self.request_airdrop()
-            self._wait_for_key()
-        elif choice_num == "4":
-            # Just refresh - the menu will redraw with updated balance
-            pass
-        elif choice_num == "5":
-            self._draw_header()
-            self.show_network_status()
-            self._wait_for_key()
-        elif choice_num == "6":
-            # Unmount the wallet
-            if self.usb_manager.mount_point:
-                self.usb_manager.unmount_device()
+        """Launch the modern TUI interface when wallet is mounted"""
+        # Launch the new TUI interface
+        from tui_wallet import ColdstarLiveWallet
+
+        app = ColdstarLiveWallet()
+        app.run()
+
+        # If TUI unmounted the wallet, clear local state
+        if getattr(app, "did_unmount", False):
             self.usb_is_cold_wallet = False
             self.current_public_key = None
             self.current_usb_device = None
-            print_success("Wallet unmounted")
-            self._wait_for_key()
-        elif choice_num == "0":
-            self.exit_app()
+            self.usb_manager.mount_point = None
+
+        # When TUI exits, return to main loop
+        return
     
     def flash_cold_wallet(self):
         """Build and flash cold wallet OS to USB"""

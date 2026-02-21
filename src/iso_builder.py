@@ -29,6 +29,8 @@ class ISOBuilder:
         self.iso_path: Optional[Path] = None
         self.generated_pubkey: Optional[str] = None
         self.is_windows = platform.system() == 'Windows'
+        self.is_macos = platform.system() == 'Darwin'
+        self.is_linux = platform.system() == 'Linux'
     
     def build_complete_iso(self, output_dir: str = "./output") -> Optional[Path]:
         """Build complete bootable ISO with transaction signing and keygen"""
@@ -962,19 +964,19 @@ For more information, see the project documentation.
             return False
     
     def _flash_to_usb_linux(self, device_path: str, image_path: str = None) -> bool:
-        """Flash on Linux using dd or mount/copy"""
+        """Flash on Linux/macOS using dd or mount/copy"""
         image = Path(image_path) if image_path else self.iso_path
-        
+
         if not image or not image.exists():
             print_error("No image file to flash")
             return False
-        
+
         print_step(6, 7, f"Flashing to {device_path}...")
         print_warning(f"This will ERASE ALL DATA on {device_path}")
-        
+
         try:
             mount_point = None
-            
+
             if str(image).endswith('.img') or str(image).endswith('.iso'):
                 result = subprocess.run(
                     ['dd', f'if={image}', f'of={device_path}', 'bs=4M', 'status=progress', 'oflag=sync'],
@@ -982,13 +984,50 @@ For more information, see the project documentation.
                     timeout=600
                 )
             else:
+                # For tar.gz archives, we need to extract to the USB
+                # macOS and Linux have different formatting tools
                 print_info("Formatting USB device...")
-                subprocess.run(['mkfs.ext4', '-F', device_path], capture_output=True, timeout=60)
-                
-                mount_point = f"/tmp/usb_flash_{os.getpid()}"
-                os.makedirs(mount_point, exist_ok=True)
-                
-                subprocess.run(['mount', device_path, mount_point], capture_output=True, timeout=30)
+
+                if self.is_macos:
+                    # macOS: Use diskutil to format as ExFAT (cross-platform compatible)
+                    # First, unmount the disk
+                    subprocess.run(['diskutil', 'unmountDisk', device_path], capture_output=True, timeout=30)
+                    # Format as ExFAT (works on Mac, Windows, Linux)
+                    format_result = subprocess.run(
+                        ['diskutil', 'eraseDisk', 'ExFAT', 'COLDSTAR', 'MBR', device_path],
+                        capture_output=True,
+                        text=True,
+                        timeout=60
+                    )
+                    if format_result.returncode != 0:
+                        print_error(f"Format failed: {format_result.stderr}")
+                        return False
+
+                    # Find the mount point
+                    mount_result = subprocess.run(
+                        ['diskutil', 'info', device_path + 's1'],
+                        capture_output=True,
+                        text=True,
+                        timeout=10
+                    )
+                    # Parse mount point from diskutil output
+                    for line in mount_result.stdout.split('\n'):
+                        if 'Mount Point:' in line:
+                            mount_point = line.split(':', 1)[1].strip()
+                            break
+
+                    if not mount_point or mount_point == '':
+                        mount_point = '/Volumes/COLDSTAR'
+
+                    print_success(f"USB formatted as ExFAT, mounted at: {mount_point}")
+                else:
+                    # Linux/Android: Use mkfs.ext4 (original behavior)
+                    subprocess.run(['mkfs.ext4', '-F', device_path], capture_output=True, timeout=60)
+
+                    mount_point = f"/tmp/usb_flash_{os.getpid()}"
+                    os.makedirs(mount_point, exist_ok=True)
+
+                    subprocess.run(['mount', device_path, mount_point], capture_output=True, timeout=30)
                 
                 result = subprocess.run(
                     ['tar', '-xzf', str(image), '-C', mount_point],
