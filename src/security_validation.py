@@ -108,10 +108,10 @@ def validate_mount_point(mount_point: str, platform: str = None) -> Tuple[bool, 
     
     # Platform-specific validation
     if platform == 'Linux':
-        # Linux: typically /media, /mnt, or /run/media
-        allowed_prefixes = ['/media/', '/mnt/', '/run/media/']
+        # Linux: typically /media, /mnt, or /run/media, plus the application's own /tmp/solana_usb_ directory
+        allowed_prefixes = ['/media/', '/mnt/', '/run/media/', '/tmp/solana_usb_']
         if not any(str(mount_path).startswith(prefix) for prefix in allowed_prefixes):
-            return False, f"Invalid mount point: must be under /media/, /mnt/, or /run/media/"
+            return False, "Invalid mount point: must be under /media/, /mnt/, /run/media/, or /tmp/solana_usb_"
     
     elif platform == 'Darwin':
         # macOS: /Volumes only
