@@ -19,6 +19,7 @@ import base58
 
 from src.ui import print_success, print_error, print_info, print_warning, get_password_input, confirm_dangerous_action
 from src.secure_memory import SecureWalletHandler
+from src.security_validation import validate_password_strength
 
 # Import Rust signer (REQUIRED)
 try:
@@ -99,6 +100,17 @@ class WalletManager:
                 
             if not password:
                 print_error("Password cannot be empty!")
+                return False
+            
+            # Validate password strength
+            is_valid, error_msg = validate_password_strength(password)
+            if not is_valid:
+                print_error(f"Password validation failed: {error_msg}")
+                print_info("Password requirements:")
+                print_info("  - At least 12 characters long")
+                print_info("  - Contains uppercase and lowercase letters")
+                print_info("  - Contains at least one number")
+                print_info("  - Not a common password")
                 return False
 
             # Encrypt keypair

@@ -14,11 +14,20 @@ from solders.transaction import VersionedTransaction
 
 from config import SOLANA_RPC_URL, LAMPORTS_PER_SOL
 from src.ui import print_success, print_error, print_info, print_warning, create_spinner
+from src.security_validation import validate_balance_value, validate_solana_address, validate_rpc_url
 
 
 class SolanaNetwork:
     def __init__(self, rpc_url: str = None):
         self.rpc_url = rpc_url or SOLANA_RPC_URL
+        
+        # Validate RPC URL
+        is_valid, message = validate_rpc_url(self.rpc_url)
+        if not is_valid:
+            raise ValueError(f"Invalid RPC URL: {message}")
+        if message:  # Warning message
+            print_warning(message)
+        
         self.client = httpx.Client(timeout=30.0)
     
     def __enter__(self):
@@ -46,16 +55,37 @@ class SolanaNetwork:
     
     def get_balance(self, public_key: str) -> Optional[float]:
         try:
+            # Validate address format first
+            is_valid, error_msg = validate_solana_address(public_key)
+            if not is_valid:
+                print_error(f"Invalid address: {error_msg}")
+                return None
+            
             result = self._make_rpc_request("getBalance", [public_key])
             
             if "error" in result:
                 print_error(f"RPC Error: {result['error']['message']}")
                 return None
             
+            # Validate response structure
+            if "result" not in result or "value" not in result.get("result", {}):
+                print_error("Invalid RPC response structure")
+                return None
+            
             lamports = result.get("result", {}).get("value", 0)
+            
+            # Validate balance value
+            is_valid, error_msg = validate_balance_value(lamports)
+            if not is_valid:
+                print_error(f"Invalid balance value: {error_msg}")
+                return None
+            
             return lamports / LAMPORTS_PER_SOL
         except httpx.HTTPError as e:
             print_error(f"Network error: {e}")
+            return None
+        except (TypeError, ValueError, KeyError) as e:
+            print_error(f"Error parsing balance response: {e}")
             return None
         except Exception as e:
             print_error(f"Error getting balance: {e}")
@@ -77,9 +107,22 @@ class SolanaNetwork:
             blockhash = value.get("blockhash")
             last_valid_height = value.get("lastValidBlockHeight")
             
-            if blockhash:
-                return blockhash, last_valid_height
-            return None
+            # Validate presence and format of blockhash and last_valid_height
+            if not blockhash or last_valid_height is None:
+                print_error("Missing blockhash or lastValidBlockHeight in RPC response")
+                return None
+            
+            # Validate blockhash format (base58, 32-44 chars)
+            if not isinstance(blockhash, str) or len(blockhash) < 32 or len(blockhash) > 44:
+                print_error("Invalid blockhash format in RPC response")
+                return None
+            
+            # Validate last_valid_height is a non-negative integer
+            if not isinstance(last_valid_height, int) or last_valid_height < 0:
+                print_error("Invalid last_valid_height in RPC response")
+                return None
+            
+            return blockhash, last_valid_height
         except Exception as e:
             print_error(f"Error getting blockhash: {e}")
             return None

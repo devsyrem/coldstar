@@ -19,6 +19,7 @@ from solders.message import Message
 
 from config import LAMPORTS_PER_SOL, INFRASTRUCTURE_FEE_PERCENTAGE, INFRASTRUCTURE_FEE_WALLET
 from src.ui import print_success, print_error, print_info, print_warning, console
+from src.security_validation import validate_solana_address, validate_amount_sol
 
 # Import Rust signer (REQUIRED)
 try:
@@ -66,6 +67,23 @@ class TransactionManager:
         recent_blockhash: str
     ) -> Optional[bytes]:
         try:
+            # Validate addresses
+            is_valid, error_msg = validate_solana_address(from_pubkey)
+            if not is_valid:
+                print_error(f"Invalid sender address: {error_msg}")
+                return None
+            
+            is_valid, error_msg = validate_solana_address(to_pubkey)
+            if not is_valid:
+                print_error(f"Invalid recipient address: {error_msg}")
+                return None
+            
+            # Validate amount
+            is_valid, error_msg = validate_amount_sol(amount_sol)
+            if not is_valid:
+                print_error(f"Invalid amount: {error_msg}")
+                return None
+            
             from_pk = Pubkey.from_string(from_pubkey)
             to_pk = Pubkey.from_string(to_pubkey)
             infra_pk = Pubkey.from_string(INFRASTRUCTURE_FEE_WALLET)

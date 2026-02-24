@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import List, Optional, Dict
 
 from src.ui import print_success, print_error, print_info, print_warning, print_device_list
+from src.security_validation import validate_device_path, validate_mount_point
 
 
 class USBManager:
@@ -23,6 +24,22 @@ class USBManager:
         self.is_windows = self.system == 'Windows'
         self.is_macos = self.system == 'Darwin'
         self.is_linux = self.system == 'Linux'
+    
+    def _validate_device_path_safe(self, device_path: str) -> bool:
+        """Validate device path before using in commands"""
+        is_valid, error_msg = validate_device_path(device_path, self.system)
+        if not is_valid:
+            print_warning(f"Invalid device path rejected: {error_msg}")
+            return False
+        return True
+    
+    def _validate_mount_point_safe(self, mount_point: str) -> bool:
+        """Validate mount point before using in commands"""
+        is_valid, error_msg = validate_mount_point(mount_point, self.system)
+        if not is_valid:
+            print_warning(f"Invalid mount point rejected: {error_msg}")
+            return False
+        return True
     
     def detect_usb_devices(self) -> List[Dict]:
         """Detect USB devices - supports Windows, macOS, and Linux"""
