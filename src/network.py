@@ -107,20 +107,22 @@ class SolanaNetwork:
             blockhash = value.get("blockhash")
             last_valid_height = value.get("lastValidBlockHeight")
             
+            # Validate presence and format of blockhash and last_valid_height
+            if not blockhash or last_valid_height is None:
+                print_error("Missing blockhash or lastValidBlockHeight in RPC response")
+                return None
+            
             # Validate blockhash format (base58, 32-44 chars)
-            if blockhash:
-                if not isinstance(blockhash, str) or len(blockhash) < 32 or len(blockhash) > 44:
-                    print_error("Invalid blockhash format in RPC response")
-                    return None
-                
-                # Validate last_valid_height is a positive integer
-                if last_valid_height is not None:
-                    if not isinstance(last_valid_height, int) or last_valid_height < 0:
-                        print_error("Invalid last_valid_height in RPC response")
-                        return None
-                
-                return blockhash, last_valid_height
-            return None
+            if not isinstance(blockhash, str) or len(blockhash) < 32 or len(blockhash) > 44:
+                print_error("Invalid blockhash format in RPC response")
+                return None
+            
+            # Validate last_valid_height is a non-negative integer
+            if not isinstance(last_valid_height, int) or last_valid_height < 0:
+                print_error("Invalid last_valid_height in RPC response")
+                return None
+            
+            return blockhash, last_valid_height
         except Exception as e:
             print_error(f"Error getting blockhash: {e}")
             return None
