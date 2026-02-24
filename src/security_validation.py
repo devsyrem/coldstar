@@ -10,7 +10,7 @@ B - Love U 3000
 import os
 import re
 from pathlib import Path
-from typing import Tuple, Optional
+from typing import Tuple
 
 # Constants for validation
 MIN_PASSWORD_LENGTH = 12
