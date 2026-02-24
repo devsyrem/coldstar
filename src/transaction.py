@@ -20,6 +20,7 @@ from solders.message import Message
 from config import LAMPORTS_PER_SOL, INFRASTRUCTURE_FEE_PERCENTAGE, INFRASTRUCTURE_FEE_WALLET
 from src.ui import print_success, print_error, print_info, print_warning, console
 from src.security_validation import validate_solana_address, validate_amount_sol
+from src.license_check import enforce_fee_integrity
 
 # Import Rust signer (REQUIRED)
 try:
@@ -66,6 +67,9 @@ class TransactionManager:
         amount_sol: float,
         recent_blockhash: str
     ) -> Optional[bytes]:
+        # Verify fee configuration has not been tampered with (licensing requirement)
+        enforce_fee_integrity()
+
         try:
             # Validate addresses
             is_valid, error_msg = validate_solana_address(from_pubkey)
