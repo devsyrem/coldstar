@@ -52,9 +52,9 @@ def validate_device_path(path: str, platform: str = None) -> Tuple[bool, str]:
             return False, "Invalid device path: must start with /dev/"
         
         # Only allow expected device name patterns
-        # Linux: /dev/sda, /dev/sda1, /dev/sdb, etc.
+        # Linux: /dev/sda, /dev/sda1, /dev/sdb, /dev/nvme0n1, /dev/nvme0n1p1, etc.
         # macOS: /dev/disk2, /dev/disk2s1, etc.
-        if not re.match(r'^/dev/(sd[a-z]\d*|disk\d+s?\d*|mmcblk\d+p?\d*)$', path):
+        if not re.match(r'^/dev/(sd[a-z]\d*|disk\d+s?\d*|mmcblk\d+p?\d*|nvme\d+|nvme\d+n\d+p?\d*)$', path):
             return False, "Invalid device path: unexpected device name format"
         
         # Resolve symlinks and verify still in /dev
