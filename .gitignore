@@ -56,3 +56,4 @@ uv.lock
 .local/
 test_*.py
 check_*.py
+!tests/test_*.py

@@ -1,0 +1,1 @@
+# Coldstar test configuration
