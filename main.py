@@ -29,6 +29,7 @@ from src.usb import USBManager
 from src.network import SolanaNetwork
 from src.transaction import TransactionManager
 from src.iso_builder import ISOBuilder
+from src.license_check import check_license_acceptance, enforce_fee_integrity
 
 
 class SolanaColdWalletCLI:
@@ -1052,6 +1053,13 @@ def build_rust_signer():
 
 
 def main():
+    # Verify fee configuration integrity (licensing requirement)
+    enforce_fee_integrity()
+
+    # Require license acceptance on first run
+    if not check_license_acceptance():
+        sys.exit(1)
+
     # Build Rust signer first
     build_rust_signer()
     

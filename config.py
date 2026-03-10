@@ -4,7 +4,7 @@ Solana Cold Wallet USB Tool - Configuration
 B - Love U 3000
 """
 
-SOLANA_RPC_URL = "https://api.mainnet.solana.com"
+SOLANA_RPC_URL = "https://api.devnet.solana.com"
 
 LAMPORTS_PER_SOL = 1_000_000_000
 
@@ -33,3 +33,5 @@ NETWORK_BLACKLIST_MODULES = [
 
 APP_VERSION = "1.0.0"
 APP_NAME = "Solana Cold Wallet USB Tool"
+
+
