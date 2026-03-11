@@ -48,8 +48,12 @@ KNOWN_TOKENS = {
     }
 }
 
+# Token-2022 program ID (Token Extensions)
+TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+
 class TokenFetcher:
-    """Fetch SPL token balances for a wallet"""
+    """Fetch SPL token balances for a wallet (supports Token and Token-2022)"""
 
     def __init__(self, rpc_url: str = SOLANA_RPC_URL):
         self.rpc_url = rpc_url
@@ -113,9 +117,36 @@ class TokenFetcher:
 
         return None
 
+    def get_token_accounts_2022(self, wallet_address: str) -> List[Dict]:
+        """Get all Token-2022 token accounts for a wallet"""
+        try:
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "getTokenAccountsByOwner",
+                "params": [
+                    wallet_address,
+                    {"programId": TOKEN_2022_PROGRAM_ID},
+                    {"encoding": "jsonParsed"}
+                ]
+            }
+
+            response = self.client.post(self.rpc_url, json=payload)
+            data = response.json()
+
+            if "result" in data and "value" in data["result"]:
+                return data["result"]["value"]
+            return []
+
+        except Exception as e:
+            print(f"Error fetching Token-2022 accounts: {e}")
+            return []
+
     def get_all_token_balances(self, wallet_address: str) -> List[Dict]:
         """Get all token balances for a wallet - shows all tokens with accounts (including 0 balance)"""
         accounts = self.get_token_accounts(wallet_address)
+        # Also fetch Token-2022 accounts
+        accounts_2022 = self.get_token_accounts_2022(wallet_address)
         balances = []
 
         # Parse all token accounts (includes 0 balance tokens)
@@ -124,8 +155,21 @@ class TokenFetcher:
             if parsed:
                 balances.append(parsed)
 
+        # Parse Token-2022 accounts and mark them
+        for account in accounts_2022:
+            parsed = self.parse_token_balance(account)
+            if parsed:
+                parsed["token_2022"] = True
+                # Check if confidential transfers may be configured
+                extensions = account.get("account", {}).get("data", {}).get("parsed", {}).get("info", {}).get("extensions", [])
+                parsed["confidential_transfer"] = any(
+                    ext.get("extension") == "confidentialTransferAccount"
+                    for ext in (extensions if isinstance(extensions, list) else [])
+                )
+                balances.append(parsed)
+
         # Sort by known tokens first, then by balance
-        balances.sort(key=lambda x: (not x["is_known"], -x["balance"]))
+        balances.sort(key=lambda x: (not x.get("is_known", False), -x.get("balance", 0)))
 
         return balances
 

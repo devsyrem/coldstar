@@ -130,6 +130,18 @@ class SolanaSecureSigner:
         # signer_check_mlock_support
         self.lib.signer_check_mlock_support.argtypes = []
         self.lib.signer_check_mlock_support.restype = c_int
+        
+        # signer_export_temp_keypair
+        self.lib.signer_export_temp_keypair.argtypes = [
+            c_char_p,  # container_json
+            c_char_p,  # passphrase
+            c_char_p,  # output_path
+        ]
+        self.lib.signer_export_temp_keypair.restype = SignerResultStruct
+        
+        # signer_delete_temp_keypair
+        self.lib.signer_delete_temp_keypair.argtypes = [c_char_p]
+        self.lib.signer_delete_temp_keypair.restype = SignerResultStruct
     
     def get_version(self) -> str:
         """Get the library version."""
@@ -233,6 +245,49 @@ class SolanaSecureSigner:
         signed_tx = base64.b64decode(result_json['signed_transaction']) if 'signed_transaction' in result_json else b''
         
         return signature, signed_tx
+
+    def export_temp_keypair(
+        self,
+        encrypted_container: dict,
+        passphrase: str,
+        output_path: str,
+    ) -> str:
+        """
+        Decrypt the container in Rust and write a temporary Solana CLI-format keypair file.
+        
+        The file is written with 0600 permissions and contains [u8;64] JSON.
+        **CALLER MUST call delete_temp_keypair() after use.**
+        
+        Returns:
+            The public key (base58) of the exported keypair.
+        """
+        if isinstance(encrypted_container, dict):
+            container_json = json.dumps(encrypted_container)
+        else:
+            container_json = encrypted_container
+        
+        result = self.lib.signer_export_temp_keypair(
+            container_json.encode('utf-8'),
+            passphrase.encode('utf-8'),
+            output_path.encode('utf-8'),
+        )
+        
+        if result.error_code != 0:
+            error_msg = result.result.decode('utf-8') if result.result else "Unknown error"
+            raise RuntimeError(f"Keypair export failed: {error_msg}")
+        
+        return result.result.decode('utf-8')
+
+    def delete_temp_keypair(self, file_path: str) -> None:
+        """
+        Securely delete a temporary keypair file (zeroize contents then remove).
+        """
+        result = self.lib.signer_delete_temp_keypair(
+            file_path.encode('utf-8'),
+        )
+        if result.error_code != 0:
+            error_msg = result.result.decode('utf-8') if result.result else "Unknown error"
+            raise RuntimeError(f"Keypair deletion failed: {error_msg}")
 
 
 # ============================================================================

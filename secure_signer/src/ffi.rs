@@ -28,14 +28,14 @@ pub struct SignerResult {
 }
 
 impl SignerResult {
-    fn success(result: String) -> Self {
+    pub fn success(result: String) -> Self {
         Self {
             error_code: 0,
             result: CString::new(result).unwrap_or_default().into_raw(),
         }
     }
 
-    fn error(code: i32, message: &str) -> Self {
+    pub fn error(code: i32, message: &str) -> Self {
         Self {
             error_code: code,
             result: CString::new(message).unwrap_or_default().into_raw(),

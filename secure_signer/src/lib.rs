@@ -23,9 +23,13 @@
 pub mod crypto;
 pub mod error;
 pub mod secure_buffer;
+pub mod zk_proofs;
 
 #[cfg(feature = "ffi")]
 pub mod ffi;
+
+#[cfg(feature = "ffi")]
+pub mod zk_ffi;
 
 pub use crypto::{
     create_encrypted_key_container, decrypt_and_sign, sign_transaction, EncryptedKeyContainer,
@@ -33,6 +37,10 @@ pub use crypto::{
 };
 pub use error::SignerError;
 pub use secure_buffer::{LockingMode, SecureBuffer};
+pub use zk_proofs::{
+    ConfidentialTransferProofBundle, ElGamalCiphertext, ElGamalKeypair, EqualityProof,
+    OwnershipProof, RangeProof, ValidityProof,
+};
 
 /// Library version
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");

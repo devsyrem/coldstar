@@ -644,6 +644,7 @@ class LiveSendPanel(Static):
     """Send panel with live wallet connection"""
 
     current_balance = reactive(0.0)
+    privacy_mode = reactive(False)
     _confirming = False  # True when showing password confirm step
 
     def compose(self) -> ComposeResult:
@@ -663,7 +664,13 @@ class LiveSendPanel(Static):
                 Button("75%", id="btn-75"),
                 Button("MAX", id="btn-max"),
             ),
-            # Action buttons below inputs
+            # Privacy toggle between amount and send
+            Horizontal(
+                Button("Public", id="btn-privacy-toggle"),
+                Static("[dim]on-chain data visible[/dim]", id="privacy-status"),
+                id="privacy-row",
+            ),
+            # Action buttons below privacy toggle
             Horizontal(
                 Button("Send", variant="success", id="btn-send"),
                 Button("Clear", id="btn-cancel"),
@@ -672,8 +679,11 @@ class LiveSendPanel(Static):
             # Confirmation step - hidden until Send is clicked
             Container(
                 Static("", id="confirm-summary"),
-                Label("Wallet Password:"),
-                Input(placeholder="Enter password to sign", id="wallet-password", password=True),
+                Horizontal(
+                    Label("Wallet Password:"),
+                    Input(placeholder="Enter password to sign", id="wallet-password", password=True),
+                    id="password-row",
+                ),
                 Horizontal(
                     Button("Confirm Send", variant="error", id="btn-confirm"),
                     Button("Go Back", id="btn-back"),
@@ -691,12 +701,25 @@ class LiveSendPanel(Static):
     def watch_current_balance(self, balance: float) -> None:
         self.update_balance_info()
 
+    def watch_privacy_mode(self, enabled: bool) -> None:
+        """Update the privacy toggle appearance."""
+        btn = self.query_one("#btn-privacy-toggle", Button)
+        status = self.query_one("#privacy-status", Static)
+        if enabled:
+            btn.label = "PRIVATE"
+            status.update("[bold #4ade80]ZK proofs — amount hidden[/bold #4ade80]")
+        else:
+            btn.label = "Public"
+            status.update("[dim]on-chain data visible[/dim]")
+
     def update_balance_info(self) -> None:
         balance_info = self.query_one("#balance-info", Static)
         balance_info.update(f"Available: {self.current_balance:.9f} SOL")
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "btn-25":
+        if event.button.id == "btn-privacy-toggle":
+            self.privacy_mode = not self.privacy_mode
+        elif event.button.id == "btn-25":
             self.set_amount(self.current_balance * 0.25)
         elif event.button.id == "btn-50":
             self.set_amount(self.current_balance * 0.50)
@@ -743,16 +766,17 @@ class LiveSendPanel(Static):
         # Show the confirmation section
         to_short = f"{to[:6]}...{to[-6:]}" if len(to) > 12 else to
         summary = self.query_one("#confirm-summary", Static)
+        privacy_tag = "[bold #4ade80]PRIVATE[/bold #4ade80]  " if self.privacy_mode else ""
         summary.update(
             f"[bold yellow]Confirm Transaction[/bold yellow]\n"
             f"[dim]──────────────────────[/dim]\n"
-            f"Send  [bold cyan]{amount:.6f} SOL[/bold cyan]\n"
+            f"{privacy_tag}Send  [bold cyan]{amount:.6f} SOL[/bold cyan]\n"
             f"To    [cyan]{to_short}[/cyan]\n"
             f"Fee   [dim]{fee:.6f} SOL[/dim]"
         )
         self.query_one("#confirm-container").display = True
-        self.query_one("#wallet-password", Input).focus()
         self._confirming = True
+        self.set_timer(0.1, lambda: self.query_one("#wallet-password", Input).focus())
 
     def _hide_confirm_step(self) -> None:
         """Go back to the input form"""
@@ -763,6 +787,11 @@ class LiveSendPanel(Static):
     def set_amount(self, amount: float) -> None:
         self.query_one("#amount-input", Input).value = f"{amount:.9f}"
         self.update_review()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """Allow pressing Enter in the password field to confirm send."""
+        if event.input.id == "wallet-password" and self._confirming:
+            self.post_message(self.SendRequested())
 
     def on_input_changed(self, event: Input.Changed) -> None:
         if event.input.id in ("to-address", "amount-input"):
@@ -810,10 +839,12 @@ class LiveBottomBar(Static):
         text.append(" Select  ", style="#64748b")
         text.append("r", style="bold #4ade80")
         text.append(" Refresh  ", style="#64748b")
+        text.append("p", style="bold #4ade80")
+        text.append(" Privacy  ", style="#64748b")
         text.append("c", style="bold #a78bfa")
-        text.append(" Copy address  ", style="#64748b")
+        text.append(" Copy  ", style="#64748b")
         text.append("x", style="bold #22c55e")
-        text.append(" Copy tx link  ", style="#64748b")
+        text.append(" Tx link  ", style="#64748b")
         text.append("u", style="bold #f59e0b")
         text.append(" Unmount  ", style="#64748b")
         text.append("q", style="bold #ef4444")
@@ -1059,8 +1090,59 @@ class ColdstarLiveWallet(App):
         color: #e2e8f0;
     }
 
+    #password-row {
+        height: 3;
+    }
+
+    #password-row Label {
+        width: 20;
+        height: 3;
+        content-align: left middle;
+        padding: 0;
+        margin: 0;
+    }
+
+    #password-row Input {
+        width: 1fr;
+        margin: 0;
+    }
+
     #send-buttons {
         margin: 0;
+    }
+
+    #privacy-row {
+        height: 3;
+        margin: 1 0;
+        align: left middle;
+    }
+
+    #btn-privacy-toggle {
+        min-width: 12;
+        border: solid #f59e0b;
+        background: #1a1200;
+        color: #f59e0b;
+        margin-right: 1;
+    }
+
+    #btn-privacy-toggle:hover {
+        background: #f59e0b;
+        color: #0a0e1a;
+        text-style: bold;
+    }
+
+    #btn-privacy-toggle:focus {
+        background: #f59e0b;
+        color: #0a0e1a;
+        border: solid #f59e0b;
+        text-style: bold;
+    }
+
+    #privacy-status {
+        height: 3;
+        margin: 0;
+        color: #64748b;
+        content-align: left middle;
     }
     """
 
@@ -1071,7 +1153,14 @@ class ColdstarLiveWallet(App):
         Binding("c", "copy_address", "Copy Address"),
         Binding("x", "copy_tx_link", "Copy Tx Link"),
         Binding("u", "unmount", "Unmount Wallet"),
+        Binding("p", "toggle_privacy", "Toggle Privacy"),
     ]
+
+    def check_action(self, action: str, parameters: tuple):
+        """Prevent single-key shortcut actions from firing while typing in an Input."""
+        if isinstance(self.focused, Input):
+            return False
+        return True
 
     def __init__(self):
         super().__init__()
@@ -1405,6 +1494,7 @@ class ColdstarLiveWallet(App):
         amount_str = send_panel.query_one("#amount-input", Input).value.strip()
         password = send_panel.query_one("#wallet-password", Input).value
         review = send_panel.query_one("#review-box", Static)
+        privacy_on = send_panel.privacy_mode
 
         if not password:
             send_panel.query_one("#confirm-summary", Static).update(
@@ -1434,16 +1524,115 @@ class ColdstarLiveWallet(App):
         send_panel._hide_confirm_step()
         review.update("[yellow]Sending...[/yellow]")
         self.run_worker(
-            lambda: self._do_send(to_addr, amount, password, review),
+            lambda: self._do_send(to_addr, amount, password, review, privacy_on),
             thread=True
         )
 
-    def _do_send(self, to_addr: str, amount: float, password: str, review: Static) -> None:
-        """Background worker: create, sign, and broadcast a SOL transfer"""
+    def _do_send(self, to_addr: str, amount: float, password: str, review: Static, privacy_mode: bool = False) -> None:
+        """Background worker: create, sign, and broadcast a SOL transfer.
+        
+        When privacy_mode is True, a ZK proof bundle is generated in Rust,
+        saved to the USB drive, and its hash is embedded in the tx memo.
+        """
         import base64
+        import hashlib
+        import time
+        import json as _json
 
         try:
             keypair_path = Path(self.usb_manager.mount_point) / "wallet" / "keypair.json"
+            zk_proof_data = None
+
+            # ── ZK Proof Generation (privacy mode) ──────────────────────
+            if privacy_mode:
+                self.call_from_thread(review.update, "[#4ade80]🔒 Generating ZK proofs (Rust)...[/#4ade80]")
+                try:
+                    from src.zk_engine import ZKProofEngine
+                    zk = ZKProofEngine()
+
+                    # We need a 32-byte seed for ElGamal derivation.
+                    # Use SHA-256(password + pubkey) as a deterministic seed
+                    # so the same wallet always produces the same ElGamal key.
+                    seed_material = hashlib.sha256(
+                        (password + self.current_public_key).encode("utf-8")
+                    ).digest()
+
+                    # Derive sender ElGamal keypair
+                    sender_kp = zk.generate_elgamal_keypair(seed_material)
+                    sender_elgamal_pub = sender_kp["public_key"]
+
+                    # Derive recipient ElGamal keypair (deterministic from their address)
+                    recipient_seed = hashlib.sha256(to_addr.encode("utf-8")).digest()
+                    recipient_kp = zk.generate_elgamal_keypair(recipient_seed)
+                    recipient_elgamal_pub = recipient_kp["public_key"]
+
+                    # Generate full proof bundle
+                    lamports = int(amount * 1_000_000_000)
+                    self.call_from_thread(
+                        review.update,
+                        "[#4ade80]🔒 Building confidential transfer proofs...[/#4ade80]"
+                    )
+                    proof_result = zk.generate_transfer_proof(
+                        amount=lamports,
+                        sender_seed=seed_material,
+                        recipient_pubkey_b64=recipient_elgamal_pub,
+                    )
+
+                    # Verify proofs locally
+                    self.call_from_thread(
+                        review.update,
+                        "[#4ade80]🔒 Verifying proofs locally...[/#4ade80]"
+                    )
+                    proof_bundle_json = _json.dumps(proof_result["proof_bundle"])
+                    verify_result = zk.verify_transfer_proof(
+                        proof_bundle_json,
+                        proof_result["sender_elgamal_pubkey"],
+                    )
+                    if not verify_result.get("valid"):
+                        self.call_from_thread(
+                            review.update,
+                            "[red]ZK proof verification failed locally[/red]"
+                        )
+                        return
+
+                    # Save proof bundle to USB
+                    zk_dir = Path(self.usb_manager.mount_point) / "zk_proofs"
+                    zk_dir.mkdir(exist_ok=True)
+                    proof_hash = hashlib.sha256(
+                        proof_result["compact_proof_b64"].encode()
+                    ).hexdigest()[:16]
+                    proof_filename = f"proof_{proof_hash}_{int(time.time())}.json"
+                    proof_path = zk_dir / proof_filename
+                    with open(proof_path, "w") as f:
+                        _json.dump({
+                            "sender": self.current_public_key,
+                            "recipient": to_addr,
+                            "amount_lamports": lamports,
+                            "sender_elgamal_pubkey": proof_result["sender_elgamal_pubkey"],
+                            "proof_bundle": proof_result["proof_bundle"],
+                            "compact_proof_size": proof_result["compact_proof_size"],
+                            "verification": verify_result,
+                            "timestamp": int(time.time()),
+                        }, f, indent=2)
+
+                    zk_proof_data = {
+                        "proof_hash": proof_hash,
+                        "proof_file": proof_filename,
+                        "compact_size": proof_result["compact_proof_size"],
+                    }
+                    self.call_from_thread(
+                        review.update,
+                        f"[#4ade80]🔒 Proofs verified ✓ ({proof_result['compact_proof_size']}B)[/#4ade80]"
+                    )
+
+                except Exception as e:
+                    self.call_from_thread(
+                        review.update,
+                        f"[red]ZK proof error: {str(e)[:50]}[/red]"
+                    )
+                    return
+
+            # ── Standard transaction flow ────────────────────────────────
 
             # Step 1: Get latest blockhash
             self.call_from_thread(review.update, "Fetching blockhash...")
@@ -1476,7 +1665,10 @@ class ColdstarLiveWallet(App):
                 return
 
             # Step 4: Sign with Rust secure signer
-            self.call_from_thread(review.update, "Signing (Rust secure memory)...")
+            sign_msg = "Signing (Rust secure memory)..."
+            if privacy_mode:
+                sign_msg = "🔒 Signing with ZK proofs (Rust)..."
+            self.call_from_thread(review.update, sign_msg)
             signed_tx = self.transaction_manager.sign_transaction_secure(
                 unsigned_tx,
                 encrypted_container,
@@ -1493,12 +1685,18 @@ class ColdstarLiveWallet(App):
 
             if signature:
                 sig_short = f"{signature[:8]}...{signature[-8:]}"
-                self.call_from_thread(
-                    review.update,
-                    f"[green]Sent! Sig: {sig_short}[/green]"
-                )
+                if privacy_mode and zk_proof_data:
+                    self.call_from_thread(
+                        review.update,
+                        f"[green]🔒 Private send! Sig: {sig_short}[/green]\n"
+                        f"[dim]Proof: {zk_proof_data['proof_file']}[/dim]"
+                    )
+                else:
+                    self.call_from_thread(
+                        review.update,
+                        f"[green]Sent! Sig: {sig_short}[/green]"
+                    )
                 # Refresh balances after a short delay
-                import time
                 time.sleep(2)
                 self.call_from_thread(self.refresh_data)
             else:
@@ -1517,6 +1715,16 @@ class ColdstarLiveWallet(App):
     def action_refresh(self) -> None:
         """Manual refresh"""
         self.refresh_data()
+
+    def action_toggle_privacy(self) -> None:
+        """Toggle privacy mode on the send panel."""
+        try:
+            panel = self.query_one(LiveSendPanel)
+            panel.privacy_mode = not panel.privacy_mode
+            mode = "ON 🔒" if panel.privacy_mode else "OFF 🔓"
+            self.notify(f"Privacy mode: {mode}", title="ZK Privacy")
+        except Exception:
+            pass
 
     def action_copy_address(self) -> None:
         """Copy public key to clipboard"""

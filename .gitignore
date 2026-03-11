@@ -57,3 +57,4 @@ uv.lock
 test_*.py
 check_*.py
 !tests/test_*.py
+test-ledger/

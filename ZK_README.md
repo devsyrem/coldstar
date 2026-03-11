@@ -178,7 +178,7 @@ Test suites:
 3. **HMAC key derivation**: MVP derives HMAC key from domain constants. Production should use a pre-shared secret.
 4. **Nonce storage**: In-memory only. Production needs persistent nonce tracking.
 5. **No Bulletproofs**: Uses bit-decomposition (O(n) proof size). Production should upgrade to Bulletproofs for O(log n).
-6. **No SPL token support**: SOL transfers only for MVP.
+6. **CLI-based SPL confidential transfers**: Uses `spl-token` CLI subprocess calls. Future versions will build Token-2022 instructions natively for cold-wallet flow.
 
 ## Roadmap
 
@@ -186,8 +186,93 @@ Test suites:
 |-------|-------|--------|
 | 1 | Core ZK engine + mode system | ✓ Complete |
 | 2 | CLI integration + tests | ✓ Complete |
-| 3 | Bulletproofs, persistent nonce store | Planned |
-| 4 | SPL tokens, multi-sig support | Planned |
+| 3 | SPL Token-2022 confidential transfers | ✓ Complete |
+| 4 | Bulletproofs, persistent nonce store | Planned |
+| 5 | Native Token-2022 instruction building, multi-sig | Planned |
+
+## SPL Token Confidential Transfers
+
+### Overview
+Coldstar supports **SPL Token-2022 Confidential Transfers**, enabling privacy-preserving
+token transfers on Solana. Transfer amounts are ElGamal-encrypted on-chain with ZK proofs
+for validity.
+
+### How It Works
+```
+┌─────────────────────┐    Token-2022 Program    ┌─────────────────────┐
+│  Public Balance      │ ──── deposit ─────────► │  Confidential Bal.  │
+│  (visible on-chain)  │                          │  (ElGamal encrypted)│
+│                      │ ◄─── withdraw ────────  │                     │
+└─────────────────────┘                          └─────────────────────┘
+                                                          │
+                                              confidential transfer
+                                              (amount hidden, ZK proofs)
+                                                          │
+                                                          ▼
+                                                 ┌─────────────────┐
+                                                 │  Recipient       │
+                                                 │  Pending Balance │
+                                                 └─────────────────┘
+```
+
+### What's Hidden vs. Visible
+| Data | On-Chain Visibility |
+|------|--------------------|
+| Transfer amount | **Encrypted** (ElGamal) |
+| Sender address | Visible |
+| Recipient address | Visible |
+| Token mint | Visible |
+| Transaction signature | Visible |
+
+### Supported Tokens
+Any SPL token using the **Token-2022** program with the confidential transfer extension
+enabled. This includes tokens you create and any Token-2022 tokens that opt-in to
+confidential transfers.
+
+> **Note:** Native SOL cannot use confidential transfers — only SPL tokens on Token-2022.
+
+### Quick Start
+```bash
+# Check prerequisites
+python3 test_confidential_transfer.py --check-only
+
+# Full test: create mint → configure → deposit → withdraw
+python3 test_confidential_transfer.py --supply 1000
+
+# Python API usage
+from src.privacy.confidential_transfer import ConfidentialTransferManager
+
+mgr = ConfidentialTransferManager(
+    keypair_path="~/.config/solana/id.json"
+)
+
+# One-shot setup: mint + account + configure + fund
+result = mgr.setup_confidential_token(decimals=6, initial_supply=1000)
+
+# Deposit to confidential balance
+mgr.deposit_to_confidential(result["mint"], 500)
+
+# Confidential transfer (amount hidden on-chain)
+mgr.confidential_transfer(result["mint"], 100, "<recipient_pubkey>")
+
+# Recipient applies pending balance
+mgr.apply_pending_balance()
+
+# Withdraw back to public balance
+mgr.withdraw_from_confidential(result["mint"], 200)
+```
+
+### ZK Proofs Generated On-Chain
+The Token-2022 confidential transfer extension uses three on-chain ZK proofs:
+
+| Proof | Purpose |
+|-------|---------|
+| **Range Proof** | Transfer amount ∈ [0, 2^64) |
+| **Equality Proof** | Sender & recipient ciphertexts encrypt same value |
+| **Validity Proof** | Ciphertexts are well-formed ElGamal encryptions |
+
+These proofs are generated automatically by the `spl-token` CLI and verified
+by the on-chain Token-2022 program.
 
 ## File Structure
 

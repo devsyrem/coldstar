@@ -285,5 +285,53 @@ class SolanaNetwork:
         except Exception:
             return None
     
+    # ── Token-2022 Confidential Transfer Queries ───────────────────────
+
+    TOKEN_2022_PROGRAM_ID = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb"
+
+    def get_token_accounts_2022(self, public_key: str) -> Optional[list]:
+        """Get all Token-2022 token accounts for a wallet."""
+        try:
+            is_valid, error_msg = validate_solana_address(public_key)
+            if not is_valid:
+                print_error(f"Invalid address: {error_msg}")
+                return None
+
+            result = self._make_rpc_request(
+                "getTokenAccountsByOwner",
+                [
+                    public_key,
+                    {"programId": self.TOKEN_2022_PROGRAM_ID},
+                    {"encoding": "jsonParsed"}
+                ]
+            )
+
+            if "error" in result:
+                print_error(f"RPC Error: {result['error']['message']}")
+                return None
+
+            return result.get("result", {}).get("value", [])
+        except Exception as e:
+            print_error(f"Error fetching Token-2022 accounts: {e}")
+            return None
+
+    def get_token_account_info(self, account_address: str) -> Optional[dict]:
+        """Get parsed info for a specific token account (works for both Token and Token-2022)."""
+        try:
+            result = self._make_rpc_request(
+                "getAccountInfo",
+                [account_address, {"encoding": "jsonParsed"}]
+            )
+
+            if "error" in result:
+                return None
+
+            value = result.get("result", {}).get("value")
+            if value and value.get("data", {}).get("parsed"):
+                return value["data"]["parsed"]
+            return value
+        except Exception:
+            return None
+
     def close(self):
         self.client.close()

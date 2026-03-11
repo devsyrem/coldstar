@@ -34,4 +34,7 @@ NETWORK_BLACKLIST_MODULES = [
 APP_VERSION = "1.0.0"
 APP_NAME = "Solana Cold Wallet USB Tool"
 
-
+# Privacy / ZK proof settings
+PRIVACY_MODE_ENABLED = True  # Allow toggling confidential transfer mode
+ZK_PROOF_VERSION = "1.0.0"
+ZK_PROOF_DIR = "/zk_proofs"  # Directory on USB for storing proof bundles
