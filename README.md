@@ -16,90 +16,33 @@ This software is experimental and under active development.
 
 ## Quick Start
 
-### Prerequisites
+### macOS
 
-Coldstar requires both **Python 3.8+** and **Rust** to be installed on your system.
-
-#### Installing Python
-
-**Windows (PowerShell):**
-```powershell
-# Download and install Python from official website
-winget install Python.Python.3.11
-
-# Or download from: https://www.python.org/downloads/
-# Make sure to check "Add Python to PATH" during installation
-```
-
-**macOS:**
-```bash
-# Using Homebrew
-brew install python@3.11
-
-# Or download from: https://www.python.org/downloads/
-```
-
-**Linux:**
-```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install python3 python3-pip
-
-# Fedora
-sudo dnf install python3 python3-pip
-
-# Arch
-sudo pacman -S python python-pip
-```
-
-Verify installation:
-```bash
-python --version
-# or
-python3 --version
-```
-
-#### Installing Rust
-
-**All Platforms (Recommended):**
-```bash
-# Install rustup (Rust installer)
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-
-# Follow the on-screen instructions
-# After installation, restart your terminal
-```
-
-**Windows (Alternative using winget):**
-```powershell
-winget install Rustlang.Rustup
-```
-
-Verify installation:
-```bash
-cargo --version
-rustc --version
-```
-
-### Installation & Running
-
-1. **Clone the repository:**
 ```bash
 git clone https://github.com/devsyrem/coldstar.git
 cd coldstar
+
+brew install rust
+brew install python
+
+pip3 install -r local_requirements.txt
+
+python3 main.py
 ```
 
-2. **Run the application:**
-```bash
+### Windows
+
+```powershell
+git clone https://github.com/devsyrem/coldstar.git
+cd coldstar
+
+winget install Rustlang.Rustup
+winget install Python.Python.3.11
+
+pip install -r local_requirements.txt
+
 python main.py
 ```
-
-The application will automatically:
-- Build the Rust secure signer on first run
-- Set up the necessary environment
-- Launch the interactive CLI
-
-**Note:** The first run will take a few minutes as it compiles the Rust components. Subsequent runs will be much faster.
 
 ---
 
