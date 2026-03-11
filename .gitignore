@@ -14,6 +14,8 @@ env/
 # Rust build artifacts
 secure_signer/target/
 secure_signer/Cargo.lock
+coldstar_zk/target/
+coldstar_zk/Cargo.lock
 *.dll
 *.so
 *.dylib
@@ -58,3 +60,19 @@ test_*.py
 check_*.py
 !tests/test_*.py
 test-ledger/
+
+# Test suite and caches
+tests/
+.pytest_cache/
+
+# Demo / example scripts
+tui_demo.py
+ui_demo.py
+python_signer_example.py
+
+# Attached assets (screenshots)
+attached_assets/
+
+# Internal dev notes
+STEP7_*.txt
+STEP7_*.md
