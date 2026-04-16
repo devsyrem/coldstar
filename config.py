@@ -8,10 +8,6 @@ SOLANA_RPC_URL = "https://api.mainnet.solana.com"
 
 LAMPORTS_PER_SOL = 1_000_000_000
 
-# Infrastructure fee configuration
-INFRASTRUCTURE_FEE_PERCENTAGE = 0.01  # 1% fee
-INFRASTRUCTURE_FEE_WALLET = "Cak1aAwxM2jTdu7AtdaHbqAc3Dfafts7KdsHNrtXN5rT"
-
 WALLET_DIR = "/wallet"
 INBOX_DIR = "/inbox"
 OUTBOX_DIR = "/outbox"

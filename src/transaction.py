@@ -17,7 +17,7 @@ from solders.system_program import transfer, TransferParams
 from solders.transaction import Transaction
 from solders.message import Message
 
-from config import LAMPORTS_PER_SOL, INFRASTRUCTURE_FEE_PERCENTAGE, INFRASTRUCTURE_FEE_WALLET
+from config import LAMPORTS_PER_SOL
 from src.ui import print_success, print_error, print_info, print_warning, console
 from src.security_validation import validate_solana_address, validate_amount_sol
 
@@ -55,10 +55,6 @@ class TransactionManager:
             print_error(f"FATAL: Failed to initialize Rust signer: {e}")
             sys.exit(1)
     
-    def calculate_infrastructure_fee(self, amount_sol: float) -> float:
-        """Calculate 1% infrastructure fee in SOL"""
-        return amount_sol * INFRASTRUCTURE_FEE_PERCENTAGE
-    
     def create_transfer_transaction(
         self,
         from_pubkey: str,
@@ -86,11 +82,6 @@ class TransactionManager:
             
             from_pk = Pubkey.from_string(from_pubkey)
             to_pk = Pubkey.from_string(to_pubkey)
-            infra_pk = Pubkey.from_string(INFRASTRUCTURE_FEE_WALLET)
-            
-            # Calculate infrastructure fee (1% of transaction amount)
-            infra_fee_sol = self.calculate_infrastructure_fee(amount_sol)
-            infra_fee_lamports = int(infra_fee_sol * LAMPORTS_PER_SOL)
             
             # Main transfer amount
             lamports = int(amount_sol * LAMPORTS_PER_SOL)
@@ -99,7 +90,6 @@ class TransactionManager:
             # Create transfer instructions
             instructions = []
             
-            # 1. Main transfer to recipient
             transfer_ix = transfer(
                 TransferParams(
                     from_pubkey=from_pk,
@@ -109,25 +99,12 @@ class TransactionManager:
             )
             instructions.append(transfer_ix)
             
-            # 2. Infrastructure fee transfer (only if fee > 0)
-            if infra_fee_lamports > 0:
-                infra_fee_ix = transfer(
-                    TransferParams(
-                        from_pubkey=from_pk,
-                        to_pubkey=infra_pk,
-                        lamports=infra_fee_lamports
-                    )
-                )
-                instructions.append(infra_fee_ix)
-            
             # Debug: Verify transfer instruction
             print_info(f"Transfer instruction created:")
             print_info(f"  Program ID: {transfer_ix.program_id}")
             print_info(f"  Accounts: {len(transfer_ix.accounts)}")
             print_info(f"  Data (hex): {transfer_ix.data.hex()}")
             print_info(f"  Lamports to transfer: {lamports}")
-            if infra_fee_lamports > 0:
-                print_info(f"  Infrastructure fee: {infra_fee_sol:.9f} SOL ({infra_fee_lamports} lamports)")
             
             message = Message.new_with_blockhash(
                 instructions,
@@ -153,8 +130,6 @@ class TransactionManager:
             print_info(f"From: {from_pubkey}")
             print_info(f"To: {to_pubkey}")
             print_info(f"Amount: {amount_sol} SOL")
-            if infra_fee_lamports > 0:
-                print_info(f"Infrastructure Fee: {infra_fee_sol:.9f} SOL")
             
             return self.unsigned_tx
         except Exception as e:
