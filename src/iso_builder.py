@@ -1029,10 +1029,11 @@ For more information, see the project documentation.
 
                     subprocess.run(['mount', device_path, mount_point], capture_output=True, timeout=30)
                 
+                print_info("Extracting filesystem to USB (this can take several minutes on ExFAT)...")
                 result = subprocess.run(
                     ['tar', '-xzf', str(image), '-C', mount_point],
                     capture_output=True,
-                    timeout=300
+                    timeout=600
                 )
             
             if result.returncode == 0:
