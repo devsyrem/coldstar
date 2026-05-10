@@ -215,14 +215,14 @@ Traditional hardware wallets rely on permanent devices that store private keys f
 
 ### Initialization Flow
 ```mermaid
-graph LR
+flowchart LR
     A[🔧 Initialize USB] --> B[🔑 Generate Keys]
     B --> C[🔐 Encrypt to USB]
 ```
 
 ### Signing Flow (When Needed)
 ```mermaid
-graph LR
+flowchart LR
     D[📝 Load Transaction] --> E[💾 Read from USB to RAM]
     E --> F[🔓 Decrypt in Memory]
     F --> G[✍️ Sign Transaction]
