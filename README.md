@@ -4,11 +4,11 @@
 
 ### CLI-First Cold Wallet System with RAM-Only Key Exposure
 
-[![License](https://img.shields.io/badge/license-Open%20Source-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Open%20Source-blue.svg)](#)
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
 [![Status](https://img.shields.io/badge/status-Proof%20of%20Concept-yellow.svg)](#)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#)
 
 [Quick Start](#-quick-start) • [Documentation](documentation/) • [Security](SECURITY.md) • [Architecture](documentation/ARCHITECTURE.md) • [Whitepaper](documentation/whitepaper.md)
 
@@ -894,7 +894,7 @@ coldstar/
 
 ## 📜 License
 
-Open-source. See the [LICENSE](LICENSE) file for details.
+Open-source project. License details to be added.
 
 ---
 
@@ -917,7 +917,7 @@ Open-source. See the [LICENSE](LICENSE) file for details.
 
 ### 🤝 Contributing
 
-We welcome contributions! Please see our contributing guidelines and submit pull requests.
+We welcome contributions! Please open issues and submit pull requests on GitHub.
 
 ### 💬 Community
 
