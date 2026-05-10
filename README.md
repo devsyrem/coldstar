@@ -167,8 +167,6 @@ rustc --version
 
 ### ⚡ Installation & Running
 
-### ⚡ Installation & Running
-
 **1️⃣ Clone the repository:**
 ```bash
 git clone https://github.com/devsyrem/coldstar.git
@@ -526,8 +524,6 @@ RAM Address: 0x7F3A8000     RAM Address: 0x7F3A8000
 
 ---
 
----
-
 ### 📊 Data States Across Hardware
 
 | Location | Data State | Duration | Hardware |
@@ -573,8 +569,6 @@ RAM Address: 0x7F3A8000     RAM Address: 0x7F3A8000
 > 📖 **See [SECURE_SIGNER_README.md](documentation/SECURE_SIGNER_README.md) for detailed information on the Rust-based secure signer implementation.**
 
 ---
-
-### ⚖️ Key Differences from Hardware Wallets
 
 ### ⚖️ Key Differences from Hardware Wallets
 
