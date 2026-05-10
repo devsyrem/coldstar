@@ -101,6 +101,6 @@ ulimit -l unlimited
 ## Support
 
 For issues or questions:
-- Check the README.md and SECURITY.md
+- Check the README.md and documentation/SECURITY.md
 - Review the example code in python_signer_example.py
 - Open an issue with detailed logs and steps to reproduce
