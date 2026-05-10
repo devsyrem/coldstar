@@ -222,7 +222,7 @@ flowchart LR
 
 ### Signing Flow (When Needed)
 ```mermaid
-flowchart LR
+flowchart TD
     D[📝 Load Transaction] --> E[💾 Read from USB to RAM]
     E --> F[🔓 Decrypt in Memory]
     F --> G[✍️ Sign Transaction]
