@@ -20,7 +20,7 @@
 
 > **Proof of Concept — Experimental Software**
 >
-> Coldstar is a **proof of concept** and an **experimental version**. It is **not production-ready** and should **not** be used to secure real assets. This repository exists for **developers and researchers** in the Coldstar community to understand, evaluate, and improve the Coldstar process. 
+> Coldstar is a **proof of concept** and an **experimental version**. It is **not production-ready** and should **not** be used to secure real assets. This repository exists for **developers and researchers** in the Coldstar community to understand, evaluate, and improve the Coldstar process.
 >
 > 🤝 Contributions, feedback, and security reviews are **welcome and encouraged**.
 
