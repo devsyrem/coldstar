@@ -576,235 +576,358 @@ RAM Address: 0x7F3A8000     RAM Address: 0x7F3A8000
 
 ### ⚖️ Key Differences from Hardware Wallets
 
-| Aspect | Hardware Wallet | Coldstar |
-|--------|----------------|----------|
-| **Persistent key storage** | Yes (secure element) | No (RAM only during signing) |
-| **Physical attack surface** | Permanent device | Disposable USB + computer RAM |
-| **Decryption location** | Inside secure chip | System RAM (mlock'd) |
-| **Key lifetime** | Years | Microseconds |
-| **Supply chain risk** | High (proprietary hardware) | Low (commodity USB + open source) |
-| **OS compromise impact** | Protected by hardware | Vulnerable |
+### ⚖️ Key Differences from Hardware Wallets
+
+| Aspect | 🏪 Hardware Wallet | ❄️ Coldstar |
+|--------|-------------------|-------------|
+| **Persistent key storage** | ✅ Yes (secure element) | ❌ No (RAM only during signing) |
+| **Physical attack surface** | 🔒 Permanent device | 💿 Disposable USB + computer RAM |
+| **Decryption location** | 🔐 Inside secure chip | 💾 System RAM (mlock'd) |
+| **Key lifetime** | 📅 Years | ⚡ Microseconds |
+| **Supply chain risk** | ⚠️ High (proprietary hardware) | ✅ Low (commodity USB + open source) |
+| **OS compromise impact** | 🛡️ Protected by hardware | ⚠️ Vulnerable |
 
 ---
 
-## Supported Use Cases
+## 🎯 Supported Use Cases
 
-Coldstar is asset-agnostic and designed to support modern on-chain workflows, including:
+Coldstar is **asset-agnostic** and designed to support modern on-chain workflows, including:
 
-* Native Solana transactions
-* SPL tokens
-* Stablecoins
-* Tokenized commodities (e.g. PAXG)
-* Tokenized equities (xStocks)
-* Custom program instructions
-* Solana staking and delegation
+<table>
+<tr>
+<td width="50%" valign="top">
 
-All assets are handled under the same cold-signing security model.
+### 💰 Asset Types
+- ⚡ Native Solana transactions
+- 🪙 SPL tokens
+- 💵 Stablecoins
+- 🥇 Tokenized commodities (e.g. PAXG)
+
+</td>
+<td width="50%" valign="top">
+
+### 🔧 Operations
+- 📈 Tokenized equities (xStocks)
+- 🛠️ Custom program instructions
+- 🏦 Solana staking and delegation
+- 🔄 All cold-signing security models
+
+</td>
+</tr>
+</table>
+
+> 🎯 All assets are handled under the same cold-signing security model.
 
 ---
 
-## Why Coldstar Exists
+## 🤔 Why Coldstar Exists
 
-Hardware wallets improved security, but introduced new problems:
+Hardware wallets improved security, but introduced **new problems**:
 
-* Permanent key storage
-* Vendor trust assumptions
-* Firmware and supply-chain risk
-* Poor automation support
-* Manual, GUI-driven workflows
+<table>
+<tr>
+<td width="50%" valign="top">
 
-Coldstar removes the concept of a permanent trusted device entirely.
+### ❌ Hardware Wallet Issues
+- 🔒 Permanent key storage
+- 🏭 Vendor trust assumptions
+- ⚠️ Firmware and supply-chain risk
+- 🐌 Poor automation support
+- 🖱️ Manual, GUI-driven workflows
+
+</td>
+<td width="50%" valign="top">
+
+### ✅ Coldstar Solutions
+- ⚡ Temporary, RAM-only keys
+- 🔓 No vendor trust required
+- 📖 Open-source and auditable
+- 🤖 Automation-native design
+- ⌨️ CLI-first workflows
+
+</td>
+</tr>
+</table>
+
+**Coldstar removes the concept of a permanent trusted device entirely.**
 
 Any USB drive can be:
+- 🔄 **Rotated** — Replace with a new one anytime
+- 💥 **Destroyed** — No regrets about hardware cost
+- 🔁 **Replaced** — Use any commodity USB
+- 🗑️ **Treated as disposable** — No attachment to specific devices
 
-* Rotated
-* Destroyed
-* Replaced
-* Treated as disposable
-
-There are no serial numbers, proprietary chips, or vendor lock-in.
+> 💡 There are no serial numbers, proprietary chips, or vendor lock-in.
 
 📖 **See [whitepaper.md](documentation/whitepaper.md) for the complete technical whitepaper and theoretical foundations.**
 
 ---
 
-## Threat Model and Assumptions
+## 🛡️ Threat Model and Assumptions
 
-Coldstar is explicit about its security boundaries.
+Coldstar is **explicit** about its security boundaries.
 
-It protects against:
+<table>
+<tr>
+<td width="50%" valign="top">
 
-* Long-lived key exposure
-* Firmware backdoors
-* Hardware supply-chain manipulation
-* Persistent device compromise
-* Seizure or fingerprinting of signing hardware
+### ✅ Protects Against
+- ⏰ Long-lived key exposure
+- 🔓 Firmware backdoors
+- 🏭 Hardware supply-chain manipulation
+- 🔒 Persistent device compromise
+- 👮 Seizure or fingerprinting of signing hardware
 
-It assumes:
+</td>
+<td width="50%" valign="top">
 
-* The user controls their operating system
-* The runtime environment is not fully compromised
-* Users are capable of auditing and understanding CLI-based tooling
+### 📋 Assumes
+- 🖥️ User controls their operating system
+- ✅ Runtime environment is not fully compromised
+- 👨‍💻 Users are capable of auditing CLI-based tooling
 
-Coldstar does not attempt to hide these assumptions behind hardware abstractions.
+</td>
+</tr>
+</table>
+
+> 💡 **Coldstar does not attempt to hide these assumptions behind hardware abstractions.**
 
 ---
 
-## First Instance Boot Process
+## 🔄 First Instance Boot Process
 
-**New Feature:** Automatic file integrity and restoration system.
+> **✨ New Feature:** Automatic file integrity and restoration system.
 
 Every time you plug your USB cold wallet into a machine, Coldstar automatically:
 
-* ✅ Detects if this is the first time on this machine/session
-* ✅ Verifies all critical wallet files (keypair.json, pubkey.txt)
-* ✅ Restores missing or corrupted files from backup (if needed)
-* ✅ Creates/updates backups of valid files
-* ✅ Updates boot instance markers
+- ✅ Detects if this is the first time on this machine/session
+- ✅ Verifies all critical wallet files (`keypair.json`, `pubkey.txt`)
+- ✅ Restores missing or corrupted files from backup (if needed)
+- ✅ Creates/updates backups of valid files
+- ✅ Updates boot instance markers
 
-**This is not a restoration function** - it's an intelligent boot detection mechanism that ensures wallet integrity across different machines and reboots.
+> 💡 **This is not a restoration function** — it's an intelligent boot detection mechanism that ensures wallet integrity across different machines and reboots.
 
-### How It Works
+### 🔧 How It Works
 
-1. **Boot Detection:** Generates unique boot instance ID from machine hostname + process + timestamp
-2. **File Verification:** Checks critical files for existence and corruption (0-byte detection)
-3. **Smart Restoration:** Only restores files if actually missing or corrupted
-4. **Automatic Backups:** Creates backups in `.coldstar/backup/` directory on USB
+1. **🆔 Boot Detection:** Generates unique boot instance ID from machine hostname + process + timestamp
+2. **🔍 File Verification:** Checks critical files for existence and corruption (0-byte detection)
+3. **🔄 Smart Restoration:** Only restores files if actually missing or corrupted
+4. **💾 Automatic Backups:** Creates backups in `.coldstar/backup/` directory on USB
 
-### Storage Structure
+### 📁 Storage Structure
 
 ```
 USB Drive
 ├── wallet/
-│   ├── keypair.json          # Encrypted private key
-│   └── pubkey.txt             # Public address
-├── inbox/                     # Unsigned transactions
-├── outbox/                    # Signed transactions  
-└── .coldstar/                 # Hidden system directory
-    ├── last_boot_id           # Boot instance tracker
-    └── backup/                # Automatic backups
+│   ├── keypair.json          # 🔐 Encrypted private key
+│   └── pubkey.txt             # 🔑 Public address
+├── inbox/                     # 📥 Unsigned transactions
+├── outbox/                    # 📤 Signed transactions  
+└── .coldstar/                 # 🔒 Hidden system directory
+    ├── last_boot_id           # 🆔 Boot instance tracker
+    └── backup/                # 💾 Automatic backups
         ├── keypair.json
         └── pubkey.txt
 ```
 
-### Benefits
+### 🎯 Benefits
 
-* **Zero User Intervention** - Everything happens automatically
-* **Cross-Machine Compatibility** - USB works seamlessly on any machine
-* **Corruption Detection** - Catches file system errors immediately
-* **Protection Against Accidents** - Files can be recovered from backup
-* **Performance Optimized** - Only runs when needed
+- ⚡ **Zero User Intervention** — Everything happens automatically
+- 🖥️ **Cross-Machine Compatibility** — USB works seamlessly on any machine
+- 🔍 **Corruption Detection** — Catches file system errors immediately
+- 🛡️ **Protection Against Accidents** — Files can be recovered from backup
+- 🚀 **Performance Optimized** — Only runs when needed
 
-📖 **Documentation:**
+### 📖 Documentation
+
 - [FIRST_BOOT_PROCESS.md](documentation/FIRST_BOOT_PROCESS.md) - Detailed technical specification
-- [FIRST_BOOT_IMPLEMENTATION.md](documentation/FIRST_BOOT_IMPLEMENTATION.md) - Implementation details and code walkthrough
-- [FIRST_BOOT_QUICKSTART.md](documentation/FIRST_BOOT_QUICKSTART.md) - Quick start guide for users
-- [STEP7_VISUAL_GUIDE.md](STEP7_VISUAL_GUIDE.md) - Visual guide to the 7-step USB flash process with automatic wallet generation
-- [STEP7_QUICK_REFERENCE.md](STEP7_QUICK_REFERENCE.md) - Quick reference for Step 7 implementation
+- [FIRST_BOOT_IMPLEMENTATION.md](documentation/FIRST_BOOT_IMPLEMENTATION.md) - Implementation details
+- [FIRST_BOOT_QUICKSTART.md](documentation/FIRST_BOOT_QUICKSTART.md) - Quick start guide
+- [STEP7_VISUAL_GUIDE.md](STEP7_VISUAL_GUIDE.md) - Visual guide to the 7-step USB flash process
+- [STEP7_QUICK_REFERENCE.md](STEP7_QUICK_REFERENCE.md) - Quick reference for Step 7
 
 ---
 
-## Comparison
+## 🆚 Comparison
 
-Coldstar compared to traditional hardware wallets:
+### Coldstar vs. Traditional Hardware Wallets
 
-* No permanent signing device
-* No secure element
-* No firmware approval process
-* No vendor trust anchor
-* Full automation support
-* Deterministic and scriptable workflows
+<table>
+<tr>
+<td width="50%" valign="top">
 
-Compared to open-source hardware wallets, Coldstar removes the final dependency: the device itself.
+### ❄️ Coldstar Advantages
+- ❌ No permanent signing device
+- ❌ No secure element
+- ❌ No firmware approval process
+- ❌ No vendor trust anchor
+- ✅ Full automation support
+- ✅ Deterministic and scriptable workflows
 
----
+</td>
+<td width="50%" valign="top">
 
-## CLI-First by Design
+### 🏪 Hardware Wallet Characteristics
+- ✅ Dedicated signing device
+- ✅ Secure element chip
+- ⚠️ Firmware updates required
+- ⚠️ Trust in vendor
+- ❌ Limited automation
+- ❌ Manual GUI workflows
 
-Coldstar is built for:
+</td>
+</tr>
+</table>
 
-* Headless environments
-* CI/CD pipelines
-* Automated trading systems
-* Air-gapped workflows
-* Deterministic scripting
-
-This is not a consumer wallet and does not aim to be one.
-
-There is no GUI dependency, browser extension, or background daemon.
-
----
-
-## Intended Audience
-
-Coldstar is built for:
-
-* Developers signing complex transactions
-* Traders managing significant on-chain value
-* Operators who require explicit control
-* Security-conscious users who understand their environment
-
-It is not intended for beginners or retail-first UX.
+> 💡 Compared to open-source hardware wallets, **Coldstar removes the final dependency: the device itself.**
 
 ---
 
-## Open Source and Verifiability
+## 💻 CLI-First by Design
+
+Coldstar is built for **power users and automation**:
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🎯 Target Environments
+- 🖥️ Headless environments
+- 🔄 CI/CD pipelines
+- 🤖 Automated trading systems
+- ✈️ Air-gapped workflows
+- 📜 Deterministic scripting
+
+</td>
+<td width="50%" valign="top">
+
+### 🚫 What It's NOT
+- ❌ Not a consumer wallet
+- ❌ No GUI dependency
+- ❌ No browser extension
+- ❌ No background daemon
+- ❌ Not beginner-focused
+
+</td>
+</tr>
+</table>
+
+> 💡 **This is not a consumer wallet and does not aim to be one.**
+
+---
+
+## 👥 Intended Audience
+
+Coldstar is built for **technical users** who value control and transparency:
+
+- 👨‍💻 **Developers** signing complex transactions
+- 📊 **Traders** managing significant on-chain value
+- 🔧 **Operators** who require explicit control
+- 🔐 **Security-conscious users** who understand their environment
+
+> ⚠️ **Not intended for beginners or retail-first UX.**
+
+---
+
+## 🔍 Open Source and Verifiability
 
 Coldstar is designed to be:
 
-* Fully inspectable
-* Deterministically buildable
-* Auditable by design
+- 👁️ **Fully inspectable** — All code is open-source
+- 🏗️ **Deterministically buildable** — Reproducible builds
+- 🔬 **Auditable by design** — Security by verification, not trust
 
-Security claims are meant to be verifiable, not trusted.
+> 💡 **Security claims are meant to be verifiable, not trusted.**
 
-📖 **Integration Documentation:**
-- [INTEGRATION_GUIDE.md](documentation/INTEGRATION_GUIDE.md) - Guide for integrating Coldstar into your projects
-- [INTEGRATION_STATUS.md](documentation/INTEGRATION_STATUS.md) - Current integration status and compatibility
-- [RUST_INTEGRATION_COMPLETE.md](documentation/RUST_INTEGRATION_COMPLETE.md) - Rust signer integration details
+### 📖 Integration Documentation
 
-📖 **Project Status:**
-- [PROJECT_COMPLETE.md](documentation/PROJECT_COMPLETE.md) - Project completion status and milestones
+- [INTEGRATION_GUIDE.md](documentation/INTEGRATION_GUIDE.md) - Guide for integrating Coldstar
+- [INTEGRATION_STATUS.md](documentation/INTEGRATION_STATUS.md) - Current integration status
+- [RUST_INTEGRATION_COMPLETE.md](documentation/RUST_INTEGRATION_COMPLETE.md) - Rust signer details
+
+### 📊 Project Status
+
+- [PROJECT_COMPLETE.md](documentation/PROJECT_COMPLETE.md) - Project completion status
 - [DELIVERABLES.md](documentation/DELIVERABLES.md) - Project deliverables and roadmap
 
 ---
 
-## Repository Structure (example)
+## 📂 Repository Structure
 
 ```
-cli/        Core command-line interface
-crypto/     Key generation, encryption, memory handling
-signing/    Transaction signing logic
-docs/       Architecture, threat model, design notes
-scripts/    Automation and example workflows
+coldstar/
+├── 📁 src/                    # Source code
+│   ├── cli/                   # Command-line interface
+│   ├── crypto/                # Key generation, encryption, memory handling
+│   └── signing/               # Transaction signing logic
+├── 📁 secure_signer/          # Rust-based secure signer
+├── 📁 documentation/          # Architecture, threat model, design notes
+├── 📁 attached_assets/        # Additional resources
+├── 🐍 main.py                 # Main entry point
+├── 🔧 config.py               # Configuration
+├── 📄 README.md               # This file
+└── 📋 SECURITY.md             # Security policy
 ```
 
 ---
 
-## Development and Testing
+## 🧪 Development and Testing
 
-For development and testing:
+### 🧪 Test Files
 - [test_first_boot.py](test_first_boot.py) - First boot functionality tests
 - [test_transaction.py](test_transaction.py) - Transaction signing tests
 
-**Legacy Setup Scripts:**
-- **Windows:** [quickstart.ps1](quickstart.ps1) - PowerShell setup script (requires Rust/Python pre-installed)
-- **Linux/Mac:** [quickstart.sh](quickstart.sh) - Bash setup script (requires Rust/Python pre-installed)
+### 🚀 Legacy Setup Scripts
+
+> ⚠️ **Note:** Requires Rust/Python pre-installed
+
+- **Windows:** [quickstart.ps1](quickstart.ps1) - PowerShell setup script
+- **Linux/Mac:** [quickstart.sh](quickstart.sh) - Bash setup script
 
 ---
 
-## Disclaimer
+## ⚠️ Disclaimer
 
-Users are responsible for understanding the risks, verifying the code, and operating within the documented security assumptions.
-
----
-
-## License
-
-Open-source. See the LICENSE file for details.
+> **Important:** Users are responsible for understanding the risks, verifying the code, and operating within the documented security assumptions.
 
 ---
 
+## 📜 License
 
-#
-#
+Open-source. See the [LICENSE](LICENSE) file for details.
+
+---
+
+<div align="center">
+
+## 📚 Documentation
+
+**Explore the full documentation for in-depth technical details:**
+
+| Category | Documentation |
+|----------|--------------|
+| 🏗️ **Architecture** | [ARCHITECTURE.md](documentation/ARCHITECTURE.md) |
+| 📖 **Whitepaper** | [whitepaper.md](documentation/whitepaper.md) |
+| 🔐 **Security** | [SECURITY.md](SECURITY.md) |
+| 🦀 **Secure Signer** | [SECURE_SIGNER_README.md](documentation/SECURE_SIGNER_README.md) |
+| 🔄 **First Boot** | [FIRST_BOOT_PROCESS.md](documentation/FIRST_BOOT_PROCESS.md) |
+| 🔧 **Integration** | [INTEGRATION_GUIDE.md](documentation/INTEGRATION_GUIDE.md) |
+
+---
+
+### 🤝 Contributing
+
+We welcome contributions! Please see our contributing guidelines and submit pull requests.
+
+### 💬 Community
+
+Questions? Issues? Feedback? Feel free to open an issue on GitHub.
+
+---
+
+Made with ❄️ by the Coldstar community
+
+**[⬆ Back to Top](#-coldstar)**
+
+</div>
