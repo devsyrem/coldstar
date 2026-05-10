@@ -10,7 +10,7 @@
 [![Status](https://img.shields.io/badge/status-Proof%20of%20Concept-yellow.svg)](#)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](#)
 
-[Quick Start](#-quick-start) • [Documentation](documentation/) • [Security](SECURITY.md) • [Architecture](documentation/ARCHITECTURE.md) • [Whitepaper](documentation/whitepaper.md)
+[Quick Start](#-quick-start) • [Documentation](documentation/) • [Security](documentation/SECURITY.md) • [Architecture](documentation/ARCHITECTURE.md) • [Whitepaper](documentation/whitepaper.md)
 
 </div>
 
@@ -743,8 +743,8 @@ USB Drive
 - [FIRST_BOOT_PROCESS.md](documentation/FIRST_BOOT_PROCESS.md) - Detailed technical specification
 - [FIRST_BOOT_IMPLEMENTATION.md](documentation/FIRST_BOOT_IMPLEMENTATION.md) - Implementation details
 - [FIRST_BOOT_QUICKSTART.md](documentation/FIRST_BOOT_QUICKSTART.md) - Quick start guide
-- [STEP7_VISUAL_GUIDE.md](STEP7_VISUAL_GUIDE.md) - Visual guide to the 7-step USB flash process
-- [STEP7_QUICK_REFERENCE.md](STEP7_QUICK_REFERENCE.md) - Quick reference for Step 7
+- [STEP7_VISUAL_GUIDE.md](documentation/STEP7_VISUAL_GUIDE.md) - Visual guide to the 7-step USB flash process
+- [STEP7_QUICK_REFERENCE.md](documentation/STEP7_QUICK_REFERENCE.md) - Quick reference for Step 7
 
 ---
 
@@ -861,12 +861,11 @@ coldstar/
 │   ├── crypto/                # Key generation, encryption, memory handling
 │   └── signing/               # Transaction signing logic
 ├── 📁 secure_signer/          # Rust-based secure signer
-├── 📁 documentation/          # Architecture, threat model, design notes
+├── 📁 documentation/          # Architecture, threat model, design notes, and all documentation
 ├── 📁 attached_assets/        # Additional resources
 ├── 🐍 main.py                 # Main entry point
 ├── 🔧 config.py               # Configuration
-├── 📄 README.md               # This file
-└── 📋 SECURITY.md             # Security policy
+└── 📄 README.md               # This file
 ```
 
 ---
@@ -908,7 +907,7 @@ Open-source project. License details to be added.
 |----------|--------------|
 | 🏗️ **Architecture** | [ARCHITECTURE.md](documentation/ARCHITECTURE.md) |
 | 📖 **Whitepaper** | [whitepaper.md](documentation/whitepaper.md) |
-| 🔐 **Security** | [SECURITY.md](SECURITY.md) |
+| 🔐 **Security** | [SECURITY.md](documentation/SECURITY.md) |
 | 🦀 **Secure Signer** | [SECURE_SIGNER_README.md](documentation/SECURE_SIGNER_README.md) |
 | 🔄 **First Boot** | [FIRST_BOOT_PROCESS.md](documentation/FIRST_BOOT_PROCESS.md) |
 | 🔧 **Integration** | [INTEGRATION_GUIDE.md](documentation/INTEGRATION_GUIDE.md) |
