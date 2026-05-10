@@ -213,14 +213,19 @@ Traditional hardware wallets rely on permanent devices that store private keys f
 
 ## 🏗️ How It Works
 
+### Initialization Flow
 ```mermaid
 graph LR
     A[🔧 Initialize USB] --> B[🔑 Generate Keys]
     B --> C[🔐 Encrypt to USB]
-    C --> D[📝 Sign Transaction]
-    D --> E[💾 Load to RAM]
+```
+
+### Signing Flow (When Needed)
+```mermaid
+graph LR
+    D[📝 Load Transaction] --> E[💾 Read from USB to RAM]
     E --> F[🔓 Decrypt in Memory]
-    F --> G[✍️ Sign]
+    F --> G[✍️ Sign Transaction]
     G --> H[🗑️ Wipe Memory]
 ```
 
