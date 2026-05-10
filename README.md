@@ -1,24 +1,105 @@
-# Coldstar
+<div align="center">
 
-> **⚠️ Proof of Concept — Experimental Software**
+# ❄️ Coldstar
+
+### CLI-First Cold Wallet System with RAM-Only Key Exposure
+
+[![License](https://img.shields.io/badge/license-Open%20Source-blue.svg)](LICENSE)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org/)
+[![Status](https://img.shields.io/badge/status-Proof%20of%20Concept-yellow.svg)](#)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+[Quick Start](#-quick-start) • [Documentation](documentation/) • [Security](SECURITY.md) • [Architecture](documentation/ARCHITECTURE.md) • [Whitepaper](documentation/whitepaper.md)
+
+</div>
+
+---
+
+## ⚠️ Important Notice
+
+> **Proof of Concept — Experimental Software**
 >
-> Coldstar is a **proof of concept** and an **experimental version**. It is not production-ready and should not be used to secure real assets. This repository exists for **developers and researchers** in the Coldstar community to understand, evaluate, and improve the Coldstar process. Contributions, feedback, and security reviews are welcome.
+> Coldstar is a **proof of concept** and an **experimental version**. It is **not production-ready** and should **not** be used to secure real assets. This repository exists for **developers and researchers** in the Coldstar community to understand, evaluate, and improve the Coldstar process. 
+>
+> 🤝 Contributions, feedback, and security reviews are **welcome and encouraged**.
 
-Coldstar is a CLI-first cold wallet system that transforms any standard USB drive into a disposable, RAM-only signing medium. It eliminates long-lived private key exposure by ensuring keys are decrypted only in volatile memory and only for the duration of transaction signing.
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features-at-a-glance)
+- [Quick Start](#-quick-start)
+- [Core Concept](#-core-concept)
+- [How It Works](#-how-it-works)
+- [Encryption Flow](#-encryption--decryption-flow)
+- [Supported Use Cases](#-supported-use-cases)
+- [Documentation](#-documentation)
+- [Development](#-development-and-testing)
+- [License](#-license)
+
+---
+
+## 🌟 Overview
+
+Coldstar is a **CLI-first cold wallet system** that transforms any standard USB drive into a disposable, RAM-only signing medium. It eliminates long-lived private key exposure by ensuring keys are decrypted only in volatile memory and only for the duration of transaction signing.
+
+**Key Innovation:** No permanent trusted hardware. No secure elements. No vendor lock-in.
 
 This repository contains the core implementation, documentation, and tooling required to initialize USB-based cold wallets and perform offline transaction signing.
 
 ---
 
-## Quick Start
+## ✨ Features at a Glance
 
-### Prerequisites
+<table>
+<tr>
+<td width="33%" valign="top">
+
+### 🔐 Security
+- **RAM-only** private key exposure
+- **Microsecond** key lifetime
+- **No proprietary** hardware
+- **Memory-locked** buffers (mlock)
+- **Automatic** key zeroization
+
+</td>
+<td width="33%" valign="top">
+
+### 🛠️ Design
+- **CLI-first** and automation-native
+- **Fully scriptable** and headless
+- **Open-source** and auditable
+- **Asset-agnostic** by design
+- **Disposable** USB storage
+
+</td>
+<td width="33%" valign="top">
+
+### ⚡ Workflow
+- **No GUI** dependency
+- **Deterministic** builds
+- **CI/CD** compatible
+- **Air-gap** friendly
+- **Cross-platform** support
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🚀 Quick Start
+
+### 📦 Prerequisites
 
 Coldstar requires both **Python 3.8+** and **Rust** to be installed on your system.
 
-#### Installing Python
+<details>
+<summary><b>🐍 Installing Python</b></summary>
 
-**Windows (PowerShell):**
+#### Windows (PowerShell)
 ```powershell
 # Download and install Python from official website
 winget install Python.Python.3.11
@@ -27,7 +108,7 @@ winget install Python.Python.3.11
 # Make sure to check "Add Python to PATH" during installation
 ```
 
-**macOS:**
+#### macOS
 ```bash
 # Using Homebrew
 brew install python@3.11
@@ -35,7 +116,7 @@ brew install python@3.11
 # Or download from: https://www.python.org/downloads/
 ```
 
-**Linux:**
+#### Linux
 ```bash
 # Ubuntu/Debian
 sudo apt update
@@ -48,16 +129,19 @@ sudo dnf install python3 python3-pip
 sudo pacman -S python python-pip
 ```
 
-Verify installation:
+**Verify installation:**
 ```bash
 python --version
 # or
 python3 --version
 ```
 
-#### Installing Rust
+</details>
 
-**All Platforms (Recommended):**
+<details>
+<summary><b>🦀 Installing Rust</b></summary>
+
+#### All Platforms (Recommended)
 ```bash
 # Install rustup (Rust installer)
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -66,98 +150,115 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 # After installation, restart your terminal
 ```
 
-**Windows (Alternative using winget):**
+#### Windows (Alternative using winget)
 ```powershell
 winget install Rustlang.Rustup
 ```
 
-Verify installation:
+**Verify installation:**
 ```bash
 cargo --version
 rustc --version
 ```
 
-### Installation & Running
+</details>
 
-1. **Clone the repository:**
+---
+
+### ⚡ Installation & Running
+
+### ⚡ Installation & Running
+
+**1️⃣ Clone the repository:**
 ```bash
 git clone https://github.com/devsyrem/coldstar.git
 cd coldstar
 ```
 
-2. **Run the application:**
+**2️⃣ Run the application:**
 ```bash
 python main.py
 ```
 
 The application will automatically:
-- Build the Rust secure signer on first run
-- Set up the necessary environment
-- Launch the interactive CLI
+- ✅ Build the Rust secure signer on first run
+- ✅ Set up the necessary environment
+- ✅ Launch the interactive CLI
 
-**Note:** The first run will take a few minutes as it compiles the Rust components. Subsequent runs will be much faster.
-
----
-
-## Core Idea
-
-Traditional hardware wallets rely on permanent devices that store private keys for their entire lifetime. This creates persistent trust anchors, supply-chain risk, and physical attack surfaces.
-
-Coldstar challenges this model by removing permanent trusted hardware entirely.
-
-Instead of trusting devices, Coldstar trusts:
-
-* Open-source, auditable software
-* User-controlled operating systems
-* Extremely short-lived key exposure in RAM
-
-Private keys are:
-
-* Encrypted at rest on user-supplied USB storage
-* Decrypted only in system memory
-* Explicitly wiped after signing completes
-
-The USB drive is not a signing device. It is encrypted storage only.
+> 💡 **Note:** The first run will take a few minutes as it compiles the Rust components. Subsequent runs will be much faster.
 
 ---
 
-## Key Properties
+## 💡 Core Concept
 
-* RAM-only private key exposure
-* No proprietary hardware
-* Disposable, deniable USB storage
-* CLI-first and automation-native
-* Fully scriptable and headless
-* Open-source and auditable
-* Asset-agnostic by design
+Traditional hardware wallets rely on permanent devices that store private keys for their entire lifetime. This creates **persistent trust anchors**, **supply-chain risk**, and **physical attack surfaces**.
+
+**Coldstar challenges this model** by removing permanent trusted hardware entirely.
+
+### 🔄 Instead of trusting devices, Coldstar trusts:
+
+| Traditional Approach | Coldstar Approach |
+|---------------------|-------------------|
+| 🔒 Proprietary hardware | ✅ Open-source, auditable software |
+| 🏭 Vendor-controlled firmware | ✅ User-controlled operating systems |
+| 📅 Long-lived key exposure | ✅ Extremely short-lived key exposure in RAM |
+
+### 🔐 Private keys are:
+
+- ✅ **Encrypted at rest** on user-supplied USB storage
+- ✅ **Decrypted only** in system memory
+- ✅ **Explicitly wiped** after signing completes
+
+> 🎯 **Key Insight:** The USB drive is **not** a signing device. It is **encrypted storage only**.
 
 ---
 
-## How It Works
+## 🏗️ How It Works
 
-1. A standard USB drive is initialized using the Coldstar CLI
-2. Cryptographic key pairs are generated and encrypted directly onto the USB
-3. When signing is required:
+```mermaid
+graph LR
+    A[🔧 Initialize USB] --> B[🔑 Generate Keys]
+    B --> C[🔐 Encrypt to USB]
+    C --> D[📝 Sign Transaction]
+    D --> E[💾 Load to RAM]
+    E --> F[🔓 Decrypt in Memory]
+    F --> G[✍️ Sign]
+    G --> H[🗑️ Wipe Memory]
+```
 
-   * Encrypted key material is loaded into memory
-   * Decryption occurs only in RAM
-   * The transaction is signed
-4. Decrypted key material is immediately erased from memory
-5. No plaintext keys persist on disk or hardware
+### Step-by-Step Process
 
-At no point does any powered device permanently store a usable private key.
+1. **🔧 Initialize USB Drive**  
+   A standard USB drive is initialized using the Coldstar CLI
+
+2. **🔑 Generate Key Pairs**  
+   Cryptographic key pairs are generated and encrypted directly onto the USB
+
+3. **📝 When signing is required:**
+   - Encrypted key material is loaded into memory
+   - Decryption occurs **only in RAM**
+   - The transaction is signed
+
+4. **🗑️ Immediate Cleanup**  
+   Decrypted key material is immediately erased from memory
+
+5. **✅ Security Achieved**  
+   No plaintext keys persist on disk or hardware
+
+> 🔒 **At no point does any powered device permanently store a usable private key.**
 
 📖 **See [ARCHITECTURE.md](documentation/ARCHITECTURE.md) for detailed technical architecture and system design.**
 
 ---
 
-## Encryption & Decryption Flow
+## 🔐 Encryption & Decryption Flow
 
-### Physical Hardware Path and Data Protection
+### 🔍 Physical Hardware Path and Data Protection
 
 Coldstar's security model depends on understanding exactly where sensitive data exists in physical hardware and how it's protected at each stage.
 
-#### **1. Key Generation and Encryption (Initial Setup)**
+<details>
+<summary><b>📤 1. Key Generation and Encryption (Initial Setup)</b></summary>
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -231,7 +332,10 @@ Coldstar's security model depends on understanding exactly where sensitive data 
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-#### **2. Transaction Signing (Decryption and Use)**
+</details>
+
+<details>
+<summary><b>📥 2. Transaction Signing (Decryption and Use)</b></summary>
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -341,9 +445,14 @@ Coldstar's security model depends on understanding exactly where sensitive data 
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-### Memory Protection Mechanisms
+</details>
 
-#### **mlock() - Preventing Swap to Disk**
+---
+
+### 🛡️ Memory Protection Mechanisms
+
+<details>
+<summary><b>🔒 mlock() - Preventing Swap to Disk</b></summary>
 
 ```
 Normal RAM page:                   mlock'd RAM page:
@@ -360,7 +469,10 @@ Normal RAM page:                   mlock'd RAM page:
 Private keys ONLY in mlock'd pages → Never touch persistent storage
 ```
 
-#### **Memory Zeroization**
+</details>
+
+<details>
+<summary><b>🗑️ Memory Zeroization</b></summary>
 
 ```
 Before Zeroization:         After Zeroization:
@@ -377,7 +489,10 @@ RAM Address: 0x7F3A8000     RAM Address: 0x7F3A8000
 • Protects against cold boot attacks (partially)
 ```
 
-#### **Process Memory Isolation**
+</details>
+
+<details>
+<summary><b>🔐 Process Memory Isolation</b></summary>
 
 ```
 ┌────────────────────────────────────────────────────┐
@@ -407,36 +522,59 @@ RAM Address: 0x7F3A8000     RAM Address: 0x7F3A8000
 └────────────────────────────────────────────────────┘
 ```
 
-### Data States Across Hardware
+</details>
+
+---
+
+---
+
+### 📊 Data States Across Hardware
 
 | Location | Data State | Duration | Hardware |
 |----------|-----------|----------|----------|
-| **USB NAND Flash** | Encrypted | Permanent (until deleted) | Non-volatile flash memory |
-| **USB → Computer** | Encrypted | Microseconds (transfer) | USB bus, PCIe controller |
-| **Python RAM** | Encrypted | Seconds (during signing) | DRAM (swappable) |
-| **Rust mlock'd RAM** | **PLAINTEXT** | **~100 microseconds** | **DRAM (locked, non-swappable)** |
-| **CPU Registers/Cache** | **PLAINTEXT** | **~10 nanoseconds** | **L1/L2 cache, registers** |
-| **Network transmission** | Signature only | N/A | Never contains private key |
+| 💾 **USB NAND Flash** | 🔒 Encrypted | Permanent (until deleted) | Non-volatile flash memory |
+| 🔌 **USB → Computer** | 🔒 Encrypted | Microseconds (transfer) | USB bus, PCIe controller |
+| 🐍 **Python RAM** | 🔒 Encrypted | Seconds (during signing) | DRAM (swappable) |
+| 🦀 **Rust mlock'd RAM** | ⚠️ **PLAINTEXT** | **~100 microseconds** | **DRAM (locked, non-swappable)** |
+| ⚡ **CPU Registers/Cache** | ⚠️ **PLAINTEXT** | **~10 nanoseconds** | **L1/L2 cache, registers** |
+| 🌐 **Network transmission** | ✅ Signature only | N/A | Never contains private key |
 
-### Security Guarantees
+---
 
-✅ **What is protected:**
-- Private key never stored in plaintext on any persistent storage
-- Private key never exists in Python-accessible memory
-- Private key automatically erased after signing (even on crash/panic)
-- Private key cannot be swapped to disk during signing
-- Encrypted container can be safely copied, backed up, or transmitted
+### ✅ Security Guarantees
 
-⚠️ **What is NOT protected against:**
-- Memory dumps while private key is in RAM (requires root access + precise timing)
-- Compromised operating system with kernel-level access
-- Hardware keyloggers capturing passphrase
-- Cold boot attacks (if RAM is physically extracted within seconds)
-- Physical tampering with CPU/RAM hardware
+<table>
+<tr>
+<td width="50%" valign="top">
 
-📖 **See [SECURE_SIGNER_README.md](documentation/SECURE_SIGNER_README.md) for detailed information on the Rust-based secure signer implementation.**
+#### ✅ What is Protected
 
-### Key Differences from Hardware Wallets
+- ✅ Private key never stored in plaintext on persistent storage
+- ✅ Private key never exists in Python-accessible memory
+- ✅ Private key automatically erased after signing (even on crash/panic)
+- ✅ Private key cannot be swapped to disk during signing
+- ✅ Encrypted container can be safely copied, backed up, or transmitted
+
+</td>
+<td width="50%" valign="top">
+
+#### ⚠️ What is NOT Protected Against
+
+- ⚠️ Memory dumps while private key is in RAM (requires root + precise timing)
+- ⚠️ Compromised OS with kernel-level access
+- ⚠️ Hardware keyloggers capturing passphrase
+- ⚠️ Cold boot attacks (if RAM extracted within seconds)
+- ⚠️ Physical tampering with CPU/RAM hardware
+
+</td>
+</tr>
+</table>
+
+> 📖 **See [SECURE_SIGNER_README.md](documentation/SECURE_SIGNER_README.md) for detailed information on the Rust-based secure signer implementation.**
+
+---
+
+### ⚖️ Key Differences from Hardware Wallets
 
 | Aspect | Hardware Wallet | Coldstar |
 |--------|----------------|----------|
