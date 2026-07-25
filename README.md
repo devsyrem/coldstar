@@ -18,11 +18,11 @@
 
 ## ⚠️ Important Notice
 
-> **Proof of Concept — Experimental Software**
+> ⚠️ Pre-Audit Release — Active Development
+Coldstar is a working, open-source cold-signing tool with real-world usage across the Solana ecosystem. It has not yet undergone a formal third-party security audit, and asset risk should be evaluated accordingly — we recommend starting with small amounts while the audit is pending.
+🔍 Independent audit of the on-chain program, firmware, air-gap transfer mechanism, and key management is in progress. Follow [status here] for updates.
 >
-> Coldstar is a **proof of concept** and an **experimental version**. It is **not production-ready** and should **not** be used to secure real assets. This repository exists for **developers and researchers** in the Coldstar community to understand, evaluate, and improve the Coldstar process.
->
-> 🤝 Contributions, feedback, and security reviews are **welcome and encouraged**.
+> 🤝 Contributions, feedback, and security reviews are welcome and encouraged — this is exactly the stage where outside eyes matter most.
 
 ---
 
