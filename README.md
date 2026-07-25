@@ -19,6 +19,7 @@
 ## ⚠️ Important Notice
 
 > ⚠️ Pre-Audit Release — Active Development
+> 
 > Coldstar is a working, open-source cold-signing tool with real-world usage across the Solana ecosystem. It has not yet undergone a formal third-party security audit, and asset risk should be evaluated accordingly — we recommend starting with small amounts while the audit is pending.
 🔍 Independent audit of the on-chain program, firmware, air-gap transfer mechanism, and key management is in progress. Follow @buildcoldstar on X for updates.
 >
